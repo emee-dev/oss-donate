@@ -1,0 +1,28 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build", "^test"],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "test": {
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "cache": false
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "compile": {
+      "cache": false
+    },
+    "deploy:local": {
+      "cache": false,
+      "persistent": true
+    },
+    "deploy:alfajores": {},
+    "deploy:mainnet": {}
+  }
+}

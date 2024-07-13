@@ -1,0 +1,6 @@
+POST http://localhost:3000/api
+Content-Type: application/json
+
+{
+    "github_repo": "https://github.com/emee-dev/treblle-monorepo.git"
+}

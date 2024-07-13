@@ -1,0 +1,42 @@
+{
+  "name": "oss-donate",
+  "version": "1.0.0",
+  "description": "Custom Celo Composer project.",
+  "private": true,
+  "author": "Emmanuel Ajike",
+  "license": "MIT",
+  "scripts": {
+    "frontend:dev": "turbo run dev --filter frontend",
+    "frontend:build": "turbo run build --filter frontend",
+    "frontend:start": "turbo run start --filter frontend",
+    "frontend:lint": "turbo run lint --filter frontend",
+    "hardhat:compile": "turbo run compile --filter hardhat",
+    "hardhat:localhost": "turbo run dev --filter hardhat",
+    "deploy:local": "turbo run deploy:local --filter hardhat",
+    "deploy:alfajores": "turbo run deploy:alfajores --filter hardhat",
+    "deploy:mainnet": "turbo run deploy:mainnet --filter hardhat"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/celo-org/celo-composer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/celo-org/celo-composer/issues"
+  },
+  "homepage": "https://github.com/celo-org/celo-composer/blob/main/README.md",
+  "workspaces": [
+    "packages/*"
+  ],
+  "keywords": [
+    "celo-composer",
+    "celo"
+  ],
+  "devDependencies": {
+    "dotenv-cli": "^7.4.2",
+    "turbo": "^2.0.5"
+  },
+  "packageManager": "pnpm@9.2.0",
+  "dependencies": {
+    "hardhat": "^2.19.1"
+  }
+}
