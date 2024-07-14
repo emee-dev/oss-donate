@@ -24,6 +24,10 @@ This project is a decentralized application (dApp) built for the "Build with Cel
    - **Merchandise Shop:** An integrated online shop where maintainers can sell merchandise related to their projects.
    - **cUSD Payments:** Contributors can purchase items using cUSD, with proceeds going to the maintainers.
 
+## Disclaimer
+
+Aside the landing page, theme colors. I created the rest of the project despite my lack of knowledge.
+
 ## Getting Started
 
 ### Prerequisites

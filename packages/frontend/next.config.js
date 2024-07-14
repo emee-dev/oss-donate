@@ -7,13 +7,13 @@ const nextConfig = {
   //   "@celo/identity/lib/odis/identifier",
   //   "ethers",
   // ],
-  swcMinify: true,
-  webpack: (config) => {
-    config.resolve.fallback = {
-      fs: false,
-    };
-    return config;
-  },
+  // swcMinify: true,
+  // webpack: (config) => {
+  //   config.resolve.fallback = {
+  //     fs: false,
+  //   };
+  //   return config;
+  // },
   images: {
     dangerouslyAllowSVG: true,
     remotePatterns: [

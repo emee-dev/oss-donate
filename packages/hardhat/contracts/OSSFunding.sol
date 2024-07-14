@@ -18,6 +18,12 @@ contract OSSFunding {
         uint256 total_contributions;
     }
 
+    struct Task {
+        string title;
+        uint256 amount;
+        address maintainer;
+    }
+
     address payable owner;
     IFreeMintToken public freeMintToken;
 
@@ -28,6 +34,8 @@ contract OSSFunding {
 
     mapping(string => GithubRepo) public github_repo;
     mapping(address => mapping(string => Contribution)) public contribution;
+
+    Task[] tasks;
 
     event GithubRepoAdded(string indexed repo, address maintainer);
     event ContributionReceived(
@@ -53,7 +61,8 @@ contract OSSFunding {
     }
 
     function contributeToProject(
-        string memory repo
+        string memory repo,
+        address contributor
     ) public payable returns (address) {
         require(github_repo[repo].registered, "Project is not registered");
         require(msg.value > 0, "Contribution must be greater than 0");
@@ -62,18 +71,17 @@ contract OSSFunding {
 
         github_repo[repo].stored_value += msg.value;
 
-        uint256 total = contribution[msg.sender][repo].total_contributions;
+        uint256 total = contribution[contributor][repo].total_contributions;
         total += msg.value;
 
-        contribution[msg.sender][repo] = Contribution({
-            contributor: msg.sender,
+        contribution[contributor][repo] = Contribution({
+            contributor: contributor,
             total_contributions: total
         });
 
-        emit ContributionReceived(msg.value, msg.sender, maintainer);
+        freeMintToken.mint(contributor, 1);
 
-        // Mint an NFT to the contributor
-        freeMintToken.mint(msg.sender, 1);
+        emit ContributionReceived(msg.value, contributor, maintainer);
 
         return maintainer;
     }
@@ -110,6 +118,43 @@ contract OSSFunding {
         github_repo[repo].stored_value -= balance;
 
         return (project_link, project_maintainer, balance);
+    }
+
+    function createTask(
+        string memory title,
+        uint256 amount,
+        address maintainer
+    ) public returns (bool) {
+        tasks.push(Task(title, amount, maintainer));
+
+        return true;
+    }
+
+    // Contributor can a accept a task
+    function acceptTask(uint256 ethAmountFor1Dollar) public payable {
+        require(
+            msg.value >= ethAmountFor1Dollar,
+            "Minimum donation is 1 dollar equivalent in ETH"
+        );
+
+        string memory rank;
+
+        if (msg.value >= 500 * ethAmountFor1Dollar) {
+            rank = "Platinum";
+        } else if (msg.value >= 100 * ethAmountFor1Dollar) {
+            rank = "Gold";
+        } else if (msg.value >= 20 * ethAmountFor1Dollar) {
+            rank = "Silver";
+        } else if (msg.value >= 5 * ethAmountFor1Dollar) {
+            rank = "Bronze";
+        } else {
+            rank = "Supporter";
+        }
+    }
+
+    // Returns all the tasks
+    function getAllTasks() public view returns (Task[] memory) {
+        return tasks;
     }
 
     // Function to receive Ether. msg.data must be empty

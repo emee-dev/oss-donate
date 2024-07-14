@@ -42,10 +42,8 @@ export type OSSPayload = {
 
 export type GithubResponse = {
   message: string;
-  data: {
-    funding_file: OSSPayload;
-    github_repo: GithubRepo;
-  };
+  funding_file: OSSPayload;
+  github_repo: GithubRepo;
 };
 
 export async function POST(request: Request) {
@@ -78,7 +76,7 @@ export async function POST(request: Request) {
   let { owner, repo } = isGithubRepo;
 
   let projectInfo = (await fetchFundingFile(owner, repo)) as
-    | GithubResponse["data"]["funding_file"]
+    | GithubResponse["funding_file"]
     | null;
 
   if (!projectInfo) {
@@ -96,9 +94,7 @@ export async function POST(request: Request) {
 
   return Response.json({
     message: "Github repo resolved successfully",
-    data: {
-      funding_file: projectInfo,
-      github_repo: isGithubRepo,
-    } as GithubResponse["data"],
+    funding_file: projectInfo,
+    github_repo: isGithubRepo,
   });
 }

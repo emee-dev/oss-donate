@@ -6,7 +6,7 @@ import {
 } from "@rainbow-me/rainbowkit";
 import { injectedWallet } from "@rainbow-me/rainbowkit/wallets";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createPublicClient } from "viem";
+import { createPublicClient, createWalletClient, custom } from "viem";
 import { WagmiProvider, createConfig, http } from "wagmi";
 import { celo, celoAlfajores, hardhat } from "wagmi/chains";
 
@@ -22,12 +22,6 @@ const connectors = connectorsForWallets(
     projectId: "044601f65212332475a09bc14ceb3c34",
   }
 );
-
-export const publicClient = createPublicClient({
-  // chain: celo,
-  chain: hardhat,
-  transport: http(),
-});
 
 const config = createConfig({
   connectors,

@@ -1,5 +1,6 @@
 "use client";
 
+import abi from "@/abi/sample";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,8 +11,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { redirect } from "next/navigation";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import useCopyToClipboard from "@/hooks/useCopyToClipboard";
+import useDebouncedInput from "@/hooks/useDebouncedInput";
+import useLocalStorage from "@/hooks/useLocalStorage";
+import { convertCusdtoNaira } from "@/lib/crypto";
+import { publicClient } from "@/providers/constants";
+import { stableTokenABI } from "@celo/abis";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 import { LazyMotion, domAnimation, m as motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -22,8 +37,23 @@ import {
   Loader,
   Pencil,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { ChangeEvent, SyntheticEvent, useEffect, useState } from "react";
-import abi from "@/abi/sample";
+import { formatEther, getContract } from "viem";
+import { useAccount, useConnect, useWriteContract } from "wagmi";
+import { injected } from "wagmi/connectors";
+import { GithubResponse } from "../api/route";
+import { useContext } from "@/hooks/useTheme";
+
+const STABLE_TOKEN_ADDRESS = "0x765DE816845861e75A25fCA122bb6898B8B1282a";
+
+// import Celo from "@/components/icons/celo";
+// import CopyIcon from "@/components/icons/copy";
+// import Naira from "@/components/icons/naira";
+// import Usdt from "@/components/icons/usdt";
+
+const Celo = dynamic(() => import("@/components/icons/celo"));
+const CopyIcon = dynamic(() => import("@/components/icons/copy"));
 
 let coins = [
   {
@@ -31,36 +61,7 @@ let coins = [
     slug: "cusd",
     icon: <Celo className="w-5 h-5" />,
   },
-  // {
-  //   symbol: "Naira",
-  //   slug: "naira",
-  //   icon: <Naira className="w-5 h-5" />,
-  // },
-  // {
-  //   symbol: "Usdt",
-  //   slug: "usdt",
-  //   icon: <Usdt className="w-5 h-5" />,
-  // },
 ];
-
-import Celo from "@/components/icons/celo";
-import CopyIcon from "@/components/icons/copy";
-import Naira from "@/components/icons/naira";
-import Usdt from "@/components/icons/usdt";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
-import { GithubResponse } from "../api/route";
-import { convertCusdtoNaira, convertNairaToCusd } from "@/lib/crypto";
-import useDebouncedInput from "@/hooks/useDebouncedInput";
-import { useQuery } from "@tanstack/react-query";
-import { useWriteContract } from "wagmi";
 
 type ModelProgress = "claim" | "verify" | "donate";
 
@@ -72,10 +73,31 @@ const json = {
   },
 };
 
+type Json = {
+  ossdonate: {
+    celo: {
+      ownedBy: string;
+    };
+  };
+};
+
 type ClaimAction = { params: {}; searchParams: { action: ModelProgress } };
 
 const ClaimProject = (props: ClaimAction) => {
   let modelProgress = props.searchParams.action;
+  let [account, setAccountInfo] = useContext();
+
+  const { connect } = useConnect();
+
+  useEffect(() => {
+    if (window.ethereum) {
+      connect({ connector: injected({ target: "metaMask" }) });
+    }
+  }, []);
+
+  // if(!account) {
+  //   return
+  // }
 
   return (
     <div className="flex flex-1 bg-muted h-screen justify-center items-center font-mono">
@@ -95,19 +117,58 @@ type Props = {
   handleSubmit: (val: any) => void;
 };
 
+type GithubApi = {
+  github: GithubResponse;
+  success: boolean;
+};
+
 const ClaimModal = (props: Partial<Props>) => {
-  const { data, isPending, mutate } = useMutation<
-    GithubResponse,
+  const { setValue } = useLocalStorage();
+  let [account, setAccountInfo] = useContext();
+
+  const {
+    data: hash,
+    writeContract,
+    isPending: contractCallPending,
+  } = useWriteContract();
+
+  const { data, isPending, isError, mutate } = useMutation<
+    GithubApi,
     null,
     { github_repo: string }
   >({
     mutationKey: ["claim_project"],
     mutationFn: async (payload) => {
-      let req = await axios.post("/api", payload);
+      try {
+        let req = await axios.post("/api", payload);
 
-      console.log("server api", req.data as GithubResponse);
+        let data = req.data as GithubResponse;
 
-      return Promise.resolve(req.data);
+        console.log("Github repo", data);
+
+        if (!data || req.status !== 200) {
+          return Promise.reject(null);
+        }
+
+        // let json = {
+        //   ossdonate: {
+        //     celo: { ownedBy: data.funding_file.ossdonate.celo.ownedBy },
+        //   },
+        // } as Json;
+
+        // let socialConnect = setValue("ossdonate.social.claim", json);
+
+        // if (!socialConnect) {
+        //   console.warn("Could not store socialConnect.");
+        // }
+
+        return Promise.resolve({
+          github: data,
+          success: true,
+        });
+      } catch (e: any) {
+        return Promise.reject(e.message);
+      }
     },
   });
 
@@ -116,7 +177,6 @@ const ClaimModal = (props: Partial<Props>) => {
     ev.stopPropagation();
 
     const form = new FormData(ev.currentTarget);
-
     let value = form.get("repo") as string;
 
     mutate({ github_repo: value });
@@ -127,6 +187,9 @@ const ClaimModal = (props: Partial<Props>) => {
       <Card className="w-full max-w-lg mx-2 font-mono">
         <CardHeader>
           <CardTitle className="text-2xl">Claim your project</CardTitle>
+          <CardTitle className="text-2xl">
+            Address: {account?.address}
+          </CardTitle>
           <CardDescription>
             Enter your project's Github URL to see if it has a claimable funds.
             Your repositoory must be public
@@ -151,9 +214,7 @@ const ClaimModal = (props: Partial<Props>) => {
                   id="repo"
                   name="repo"
                   type="text"
-                  // readOnly
-                  // disabled
-                  // value="https://github.com/emee-dev/treblle-monorepo.git"
+                  autoFocus
                   placeholder="https://github.com/emee-dev/treblle-monorepo.git"
                   required
                 />
@@ -163,7 +224,7 @@ const ClaimModal = (props: Partial<Props>) => {
                 </motion.div>
               </div>
 
-              {data && (
+              {data && data.success && (
                 <motion.div
                   className="h-fit w-full rounded-md border pb-3 px-4 flex flex-col gap-3"
                   initial={{ opacity: 0, y: 50 }}
@@ -177,10 +238,10 @@ const ClaimModal = (props: Partial<Props>) => {
                     </div>
                     <div className="tracking-tight">
                       <span className="text-primary/75">
-                        {data.data.github_repo.owner} /{" "}
+                        {data.github.github_repo.owner} /{" "}
                       </span>
                       <span className="text-neutral-400">
-                        {data.data.github_repo.repo + ".git"}
+                        {data.github.github_repo.repo + ".git"}
                       </span>
                     </div>
                   </div>
@@ -191,13 +252,50 @@ const ClaimModal = (props: Partial<Props>) => {
                     </span>
                     <div className="flex">
                       <span className="text-neutral-400">NONE</span>
+
                       <Button
                         size="sm"
                         variant={"outline"}
+                        type="button"
                         className="py-3 ml-auto"
+                        onClick={() => {
+                          writeContract({
+                            address:
+                              "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+                            abi: abi,
+                            functionName: "registerProject",
+                            args: [
+                              "https://github.com/emee-dev/treblle-monorepo",
+                              // @ts-expect-error
+                              account?.address,
+                            ],
+                          });
+                        }}
                       >
-                        Claim
+                        {contractCallPending && "Claiming"}
+                        {!contractCallPending && "Claim"}
                       </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+              {isError && (
+                <motion.div
+                  className="h-fit w-full rounded-md border pb-3 px-4 flex flex-col gap-3"
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  viewport={{ once: true, amount: 0.5 }}
+                >
+                  <div className="flex items-center gap-3 mt-2">
+                    <div className="rounded-full bg-primary/35 w-[40px] h-[40px] flex justify-center items-center">
+                      <Github size={25} strokeWidth={0.95} />
+                    </div>
+                    <div className="tracking-tight">
+                      <span className="text-primary/75">{"Error"} / </span>
+                      <span className="text-neutral-400">
+                        {"Could not resolve project"}
+                      </span>
                     </div>
                   </div>
                 </motion.div>
@@ -206,9 +304,17 @@ const ClaimModal = (props: Partial<Props>) => {
           </CardContent>
 
           <CardFooter className="flex">
-            <Button className="w-40 ml-auto" type="submit">
-              <ArrowRight size={18} className="mr-3" /> Continue
-            </Button>
+            {!isError && (
+              <Button className="w-40 ml-auto" type="submit">
+                <ArrowRight size={18} className="mr-3" /> Continue
+              </Button>
+            )}
+
+            {isError && (
+              <Button className="w-40 ml-auto" type="submit">
+                <ArrowRight size={18} className="mr-3" /> Retry
+              </Button>
+            )}
           </CardFooter>
         </motion.form>
       </Card>
@@ -217,6 +323,9 @@ const ClaimModal = (props: Partial<Props>) => {
 };
 
 const VerifyProject = (props: Partial<Props>) => {
+  const { address } = useAccount();
+  const { getValue, setValue } = useLocalStorage();
+  const { copied, copyToClipboard } = useCopyToClipboard();
   const { data, isPending, mutate } = useMutation<
     GithubResponse,
     null,
@@ -224,11 +333,26 @@ const VerifyProject = (props: Partial<Props>) => {
   >({
     mutationKey: ["claim_project"],
     mutationFn: async (payload) => {
-      let req = await axios.post("/api", payload);
+      try {
+        let isValidGithubRepo = await axios.post("/api", payload);
 
-      console.log("server api", req.data);
+        if (!isValidGithubRepo) {
+          return Promise.reject("Invalid github repo");
+        }
 
-      return Promise.resolve(req.data);
+        let json = {
+          ossdonate: {
+            celo: { ownedBy: "address" },
+          },
+        } as Json;
+
+        setValue("ossdonate.social.verify", json);
+
+        console.log("server api", isValidGithubRepo.data);
+        return Promise.resolve(isValidGithubRepo.data);
+      } catch (e: any) {
+        return Promise.reject(e.message);
+      }
     },
   });
 
@@ -242,6 +366,7 @@ const VerifyProject = (props: Partial<Props>) => {
 
     mutate({ github_repo: value });
   };
+
   return (
     <LazyMotion features={domAnimation}>
       <Card className="w-full max-w-lg font-mono">
@@ -263,8 +388,8 @@ const VerifyProject = (props: Partial<Props>) => {
           }}
           onSubmit={handleSubmit}
         >
-          <CardContent className="grid gap-4">
-            <div className="grid gap-2 ">
+          <CardContent className="w-full">
+            <div className="w-full">
               <div className="flex items-center py-3 gap-3">
                 <Input
                   id="repo"
@@ -283,7 +408,7 @@ const VerifyProject = (props: Partial<Props>) => {
                 </motion.div>
               </div>
 
-              <div className="h-fit max-w-[22rem] lg:max-w-[29rem] rounded-md border pb-3 justify-center flex flex-col gap-3">
+              <div className="h-fit w-full lg:max-w-[29rem] rounded-md border pb-3 justify-center flex flex-col gap-3">
                 <div className="bg-[#6d3aff] text-white flex items-center justify-between h-9 p-2 w-full rounded-tl-lg rounded-tr-lg">
                   <span className="text-sm">./FUNDING.json</span>
                   <Button
@@ -334,8 +459,9 @@ type CusdProp = { cusdAmt: number };
 
 function DonationCard(props: any) {
   let isError = false;
-  let [currentCoin, setCurrentCoin] = useState<Coins>("cusd");
+  const { setValue: setLocal } = useLocalStorage();
   let [inputvalue, setInputvalue] = useState<number>(5);
+  let [currentCoin, setCurrentCoin] = useState<Coins>("cusd");
   let { debouncedValue, setValue } = useDebouncedInput({ seconds: 500 });
   const { writeContract, writeContractAsync } = useWriteContract();
 
@@ -505,3 +631,20 @@ function DonationCard(props: any) {
 }
 
 export default ClaimProject;
+
+async function checkCUSDBalance(publicClient: any, address: string) {
+  let StableTokenContract = getContract({
+    abi: stableTokenABI,
+    address: STABLE_TOKEN_ADDRESS,
+    client: publicClient,
+  });
+
+  // @ts-expect-error
+  let balanceInBigNumber = await StableTokenContract?.read.balanceOf([address]);
+
+  let balanceInWei = balanceInBigNumber.toString();
+
+  let balanceInEthers = formatEther(balanceInWei);
+
+  return balanceInEthers;
+}

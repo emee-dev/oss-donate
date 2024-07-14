@@ -1,10 +1,5 @@
 "use client";
 
-// import Anchor from "@/components/icons/anchor";
-// import Fire from "@/components/icons/fire";
-// import Flower from "@/components/icons/flower";
-// import Lightning from "@/components/icons/lightning";
-// import Swirl from "@/components/icons/swirl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,15 +13,10 @@ const Flower = dynamic(() => import("@/components/icons/flower"));
 const Lightning = dynamic(() => import("@/components/icons/lightning"));
 const Swirl = dynamic(() => import("@/components/icons/swirl"));
 
-// Dynamically import the UI components
-// const Button = dynamic(() => import("@/components/ui/button"));
-// const Input = dynamic(() => import("@/components/ui/input"));
-// const Label = dynamic(() => import("@/components/ui/label"));
-
-import useTheme from "@/hooks/use-theme";
+// import useTheme from "@/hooks/use-theme";
+import useTheme from "@/hooks/useTheme";
 import { cn, urlEncode } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
-// import { domAnimation, LazyMotion, motion } from "framer-motion";
 import { GithubResponse } from "@/app/api/route";
 import axios from "axios";
 import { LazyMotion, domAnimation, m as motion } from "framer-motion";
@@ -53,7 +43,7 @@ const Hero = () => {
         let req = await axios.post("/api", payload);
         let repo = req.data as GithubResponse;
 
-        if (repo.data?.funding_file?.ossdonate) {
+        if (repo?.funding_file?.ossdonate) {
           router.push(
             `/claim?action=donate&repo=${urlEncode(payload.github_repo)}`
           );
@@ -103,18 +93,18 @@ const Hero = () => {
           <span
             className={cn(
               "relative bg-gradient-to-r from-primary bg-clip-text text-5xl font-extrabold text-transparent lg:text-8xl",
-              theme === "orange" && "to-rose-600",
-              theme === "blue" && "to-purple-600",
-              theme === "green" && "to-emerald-600",
-              theme === "red" && "to-rose-600",
-              theme === "yellow" && "to-yellow-600",
-              theme === "violet" && "to-violet-600",
-              theme === "gray" && "to-gray-600",
-              theme === "neutral" && "to-neutral-600",
-              theme === "slate" && "to-slate-600",
-              theme === "stone" && "to-stone-600",
-              theme === "zinc" && "to-zinc-600",
-              theme === "rose" && "to-pink-600"
+              theme === "orange" && "to-rose-600"
+              // theme === "blue" && "to-purple-600",
+              // theme === "green" && "to-emerald-600",
+              // theme === "red" && "to-rose-600",
+              // theme === "yellow" && "to-yellow-600",
+              // theme === "violet" && "to-violet-600",
+              // theme === "gray" && "to-gray-600",
+              // theme === "neutral" && "to-neutral-600",
+              // theme === "slate" && "to-slate-600",
+              // theme === "stone" && "to-stone-600",
+              // theme === "zinc" && "to-zinc-600",
+              // theme === "rose" && "to-pink-600"
             )}
           >
             Simplified.
@@ -140,7 +130,7 @@ const Hero = () => {
             initial={{ opacity: 0, y: -10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, ease: "easeOut", delay: 0.4 }}
+            transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex flex-col items-end w-full max-w-sm mx-auto mt-4 space-y-2"
           >
@@ -211,7 +201,7 @@ const Hero = () => {
               transition={{
                 duration: 0.5,
                 ease: "easeOut",
-                delay: 0.6,
+                delay: 0.3,
               }}
               className="mx-auto h-56 w-[1px] rounded-full  bg-gradient-to-b from-transparent to-primary"
             ></motion.span>

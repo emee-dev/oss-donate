@@ -11,6 +11,10 @@
   margin: 0;
 }
 
+span {
+  transition: all 0.3s;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
