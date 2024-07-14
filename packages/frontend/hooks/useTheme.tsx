@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { type ThemeName, themes } from "@/registry/themes";
 
 type Web3Account = {
-  address: string;
+  address: `0x${string}`;
   balance: number;
 };
 

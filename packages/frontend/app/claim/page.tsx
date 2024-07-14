@@ -22,9 +22,8 @@ import {
 import useCopyToClipboard from "@/hooks/useCopyToClipboard";
 import useDebouncedInput from "@/hooks/useDebouncedInput";
 import useLocalStorage from "@/hooks/useLocalStorage";
+import { useContext } from "@/hooks/useTheme";
 import { convertCusdtoNaira } from "@/lib/crypto";
-import { publicClient } from "@/providers/constants";
-import { stableTokenABI } from "@celo/abis";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { LazyMotion, domAnimation, m as motion } from "framer-motion";
@@ -33,17 +32,17 @@ import {
   ArrowRight,
   ArrowUpDown,
   BadgeCheck,
+  CheckCheck,
   Github,
   Loader,
   Pencil,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { ChangeEvent, SyntheticEvent, useEffect, useState } from "react";
-import { formatEther, getContract } from "viem";
 import { useAccount, useConnect, useWriteContract } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { GithubResponse } from "../api/route";
-import { useContext } from "@/hooks/useTheme";
+import Link from "next/link";
 
 const STABLE_TOKEN_ADDRESS = "0x765DE816845861e75A25fCA122bb6898B8B1282a";
 
@@ -65,10 +64,10 @@ let coins = [
 
 type ModelProgress = "claim" | "verify" | "donate";
 
-const json = {
+const tempJson = {
   ossdonate: {
     celo: {
-      ownedBy: "0x2d3f8696dC44B24f47E6173bA156FEDa32278D6C",
+      ownedBy: "0x0000000000000000000000000000000000000000",
     },
   },
 };
@@ -83,8 +82,19 @@ type Json = {
 
 type ClaimAction = { params: {}; searchParams: { action: ModelProgress } };
 
+type Props = {
+  isLoading: boolean;
+  handleSubmit: (val: any) => void;
+};
+
+type GithubApi = {
+  github: GithubResponse;
+  success: boolean;
+};
+
 const ClaimProject = (props: ClaimAction) => {
   let modelProgress = props.searchParams.action;
+  let { address, status } = useAccount();
   let [account, setAccountInfo] = useContext();
 
   const { connect } = useConnect();
@@ -94,6 +104,13 @@ const ClaimProject = (props: ClaimAction) => {
       connect({ connector: injected({ target: "metaMask" }) });
     }
   }, []);
+
+  useEffect(() => {
+    if (address) {
+      // @ts-expect-error
+      setAccountInfo({ address });
+    }
+  }, [address]);
 
   // if(!account) {
   //   return
@@ -112,24 +129,14 @@ const ClaimProject = (props: ClaimAction) => {
   );
 };
 
-type Props = {
-  isLoading: boolean;
-  handleSubmit: (val: any) => void;
-};
-
-type GithubApi = {
-  github: GithubResponse;
-  success: boolean;
-};
-
 const ClaimModal = (props: Partial<Props>) => {
-  const { setValue } = useLocalStorage();
   let [account, setAccountInfo] = useContext();
 
   const {
     data: hash,
-    writeContract,
+    error,
     isPending: contractCallPending,
+    writeContract,
   } = useWriteContract();
 
   const { data, isPending, isError, mutate } = useMutation<
@@ -144,23 +151,11 @@ const ClaimModal = (props: Partial<Props>) => {
 
         let data = req.data as GithubResponse;
 
-        console.log("Github repo", data);
-
         if (!data || req.status !== 200) {
           return Promise.reject(null);
         }
 
-        // let json = {
-        //   ossdonate: {
-        //     celo: { ownedBy: data.funding_file.ossdonate.celo.ownedBy },
-        //   },
-        // } as Json;
-
-        // let socialConnect = setValue("ossdonate.social.claim", json);
-
-        // if (!socialConnect) {
-        //   console.warn("Could not store socialConnect.");
-        // }
+        console.log("Github repo", data);
 
         return Promise.resolve({
           github: data,
@@ -187,9 +182,6 @@ const ClaimModal = (props: Partial<Props>) => {
       <Card className="w-full max-w-lg mx-2 font-mono">
         <CardHeader>
           <CardTitle className="text-2xl">Claim your project</CardTitle>
-          <CardTitle className="text-2xl">
-            Address: {account?.address}
-          </CardTitle>
           <CardDescription>
             Enter your project's Github URL to see if it has a claimable funds.
             Your repositoory must be public
@@ -266,8 +258,7 @@ const ClaimModal = (props: Partial<Props>) => {
                             functionName: "registerProject",
                             args: [
                               "https://github.com/emee-dev/treblle-monorepo",
-                              // @ts-expect-error
-                              account?.address,
+                              account?.address as `0x${string}`,
                             ],
                           });
                         }}
@@ -322,39 +313,58 @@ const ClaimModal = (props: Partial<Props>) => {
   );
 };
 
+type VerifyGithub = { github_repo: string };
+
 const VerifyProject = (props: Partial<Props>) => {
-  const { address } = useAccount();
+  let [account, setAccountInfo] = useContext();
+  let [object, setObject] = useState<string>("");
   const { getValue, setValue } = useLocalStorage();
   const { copied, copyToClipboard } = useCopyToClipboard();
-  const { data, isPending, mutate } = useMutation<
+
+  const { data, isPending, isError, mutate } = useMutation<
     GithubResponse,
     null,
     { github_repo: string }
   >({
-    mutationKey: ["claim_project"],
+    mutationKey: ["verify_project"],
     mutationFn: async (payload) => {
       try {
-        let isValidGithubRepo = await axios.post("/api", payload);
+        let isOwner = await axios.post("/api", payload);
 
-        if (!isValidGithubRepo) {
+        if (!isOwner) {
           return Promise.reject("Invalid github repo");
         }
 
-        let json = {
-          ossdonate: {
-            celo: { ownedBy: "address" },
-          },
-        } as Json;
+        let res = isOwner.data as GithubResponse;
 
-        setValue("ossdonate.social.verify", json);
+        if (
+          account &&
+          account?.address === res.funding_file.ossdonate.celo.ownedBy
+        ) {
+          return Promise.resolve(res);
+        }
 
-        console.log("server api", isValidGithubRepo.data);
-        return Promise.resolve(isValidGithubRepo.data);
+        return Promise.resolve(isOwner.data);
       } catch (e: any) {
         return Promise.reject(e.message);
       }
     },
   });
+
+  useEffect(() => {
+    if (account?.address) {
+      let json = {
+        ossdonate: {
+          celo: { ownedBy: account?.address },
+        },
+      } as Json;
+
+      let str = JSON.stringify(json, null, 3);
+      setObject(str);
+    } else {
+      setObject(JSON.stringify(tempJson, null, 3));
+    }
+  }, [account]);
 
   const handleSubmit = (ev: SyntheticEvent<HTMLFormElement>) => {
     ev.preventDefault();
@@ -398,45 +408,79 @@ const VerifyProject = (props: Partial<Props>) => {
                   placeholder="https://github.com/emee-dev/treblle-monorepo.git"
                 />
                 <motion.div>
-                  <Button
-                    className="bg-transparent hover:bg-transparent"
-                    type="button"
-                    size="icon"
-                  >
-                    <Pencil size={18} strokeWidth={0.75} />
-                  </Button>
+                  <Link href="/claim?action=claim">
+                    <Button
+                      className="bg-transparent hover:bg-transparent"
+                      type="button"
+                      size="icon"
+                    >
+                      <Pencil size={18} strokeWidth={0.75} />
+                    </Button>
+                  </Link>
                 </motion.div>
               </div>
 
-              <div className="h-fit w-full lg:max-w-[29rem] rounded-md border pb-3 justify-center flex flex-col gap-3">
-                <div className="bg-[#6d3aff] text-white flex items-center justify-between h-9 p-2 w-full rounded-tl-lg rounded-tr-lg">
-                  <span className="text-sm">./FUNDING.json</span>
-                  <Button
-                    className="bg-transparent hover:bg-transparent"
-                    type="button"
-                    size="icon"
-                  >
-                    <CopyIcon className="w-4 h-4" />
-                  </Button>
-                </div>
+              {!isError && (
+                <motion.div
+                  className="h-fit w-full lg:max-w-[29rem] rounded-md border pb-3 justify-center flex flex-col gap-3"
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  viewport={{ once: true, amount: 0.5 }}
+                >
+                  <div className="bg-[#6d3aff] text-white flex items-center justify-between h-9 p-2 w-full rounded-tl-lg rounded-tr-lg">
+                    <span className="text-sm">./FUNDING.json</span>
+                    <Button
+                      className="bg-transparent hover:bg-transparent"
+                      type="button"
+                      size="icon"
+                      onClick={() => copyToClipboard(object)}
+                    >
+                      {!copied && <CopyIcon className="w-4 h-4" />}
+                      {copied && <CheckCheck className="w-4 h-4" />}
+                    </Button>
+                  </div>
 
-                <div className="p-4 bg-neutral-100 text-gray-800 overflow-x-scroll no-scrollbar rounded-sm">
-                  <pre>{JSON.stringify(json, null, 3)}</pre>
-                </div>
+                  <div className="p-4 bg-neutral-100 text-gray-800 overflow-x-scroll no-scrollbar rounded-sm">
+                    <pre>{object}</pre>
+                  </div>
 
-                <div className="flex items-center pl-2 gap-3">
-                  <Checkbox
-                    id="terms"
-                    className="border border-[#6d3aff] data-[state=checked]:bg-[#6d3aff]"
-                  />
-                  <label
-                    htmlFor="terms"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    I added the FUNDING.json file to the root of my repo.
-                  </label>
-                </div>
-              </div>
+                  <div className="flex items-center pl-2 gap-3">
+                    <Checkbox
+                      id="terms"
+                      className="border border-[#6d3aff] data-[state=checked]:bg-[#6d3aff]"
+                    />
+                    <label
+                      htmlFor="terms"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      I added the FUNDING.json file to the root of my repo.
+                    </label>
+                  </div>
+                </motion.div>
+              )}
+
+              {isError && (
+                <motion.div
+                  className="h-fit w-full rounded-md border pb-3 px-4 flex flex-col gap-3"
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  viewport={{ once: true, amount: 0.5 }}
+                >
+                  <div className="flex items-center gap-3 mt-2">
+                    <div className="rounded-full bg-primary/35 w-[40px] h-[40px] flex justify-center items-center">
+                      <Github size={25} strokeWidth={0.95} />
+                    </div>
+                    <div className="tracking-tight">
+                      <span className="text-primary/75">{"Ops"} / </span>
+                      <span className="text-neutral-400">
+                        {"Could verify project ownership"}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
             </div>
           </CardContent>
           <CardFooter className="flex justify-between">
@@ -444,9 +488,17 @@ const VerifyProject = (props: Partial<Props>) => {
               <ArrowLeft size={18} className="mr-3" /> Back
             </Button>
 
-            <Button className="w-40" type="submit">
-              <BadgeCheck size={18} className="mr-3" /> Verify Now
-            </Button>
+            {!isPending && (
+              <Button className="w-40" type="submit">
+                <BadgeCheck size={18} className="mr-3" /> Verify Now
+              </Button>
+            )}
+
+            {isPending && (
+              <Button className="w-40" type="submit">
+                <BadgeCheck size={18} className="mr-3" /> Verifying
+              </Button>
+            )}
           </CardFooter>
         </motion.form>
       </Card>
@@ -631,20 +683,3 @@ function DonationCard(props: any) {
 }
 
 export default ClaimProject;
-
-async function checkCUSDBalance(publicClient: any, address: string) {
-  let StableTokenContract = getContract({
-    abi: stableTokenABI,
-    address: STABLE_TOKEN_ADDRESS,
-    client: publicClient,
-  });
-
-  // @ts-expect-error
-  let balanceInBigNumber = await StableTokenContract?.read.balanceOf([address]);
-
-  let balanceInWei = balanceInBigNumber.toString();
-
-  let balanceInEthers = formatEther(balanceInWei);
-
-  return balanceInEthers;
-}
