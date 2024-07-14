@@ -42,11 +42,6 @@ type Json = {
   };
 };
 
-type ComponentProps = {
-  params: {};
-  children: React.ReactNode;
-};
-
 type GithubApi = {
   github: GithubResponse | null;
   success: boolean;
@@ -55,7 +50,7 @@ type GithubApi = {
 type Coins = "ngn" | "cusd";
 type CusdProp = { cusdAmt: number };
 
-function DonationModal(props: ComponentProps) {
+function DonationModal() {
   let isError = false;
   const { setValue: setLocal } = useLocalStorage();
   let [inputvalue, setInputvalue] = useState<number>(5);

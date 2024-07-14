@@ -34,17 +34,12 @@ type Json = {
   };
 };
 
-type ComponentProps = {
-  params: {};
-  children: React.ReactNode;
-};
-
 type GithubApi = {
   github: GithubResponse | null;
   file: "missing" | "found";
 };
 
-const ClaimModal = (props: ComponentProps) => {
+const ClaimModal = () => {
   let [account, setAccountInfo] = useContext();
 
   const {
@@ -53,7 +48,7 @@ const ClaimModal = (props: ComponentProps) => {
     writeContract,
   } = useWriteContract();
 
-  const read = useReadContract();
+  //   const read = useReadContract();
 
   const { data, isPending, isError, mutate } = useMutation<
     GithubApi,

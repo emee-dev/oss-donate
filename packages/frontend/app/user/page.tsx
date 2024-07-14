@@ -8,7 +8,6 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { privateKeyToAccount } from "viem/accounts";
 
 import {
   Card,
@@ -20,7 +19,6 @@ import {
 } from "@/components/ui/card";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -43,12 +41,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import abi from "@/abi/sample";
 
 import {
   File,
   Home,
-  ListFilter,
   MoreHorizontal,
   Package2,
   PanelLeft,
@@ -58,19 +54,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  useAccount,
-  useSendTransaction,
-  useBalance,
-  useReadContract,
-  useWriteContract,
-  useWatchContractEvent,
-} from "wagmi";
 import { useEffect, useState } from "react";
-import { publicClient } from "@/providers/constants";
-import { parseEther, parseGwei } from "viem";
-import { hardhat } from "viem/chains";
-import { AnyARecord } from "dns";
+import { useWriteContract } from "wagmi";
 
 function Dashboard() {
   // useWatchContractEvent({
@@ -156,7 +141,7 @@ function Dashboard() {
             </BreadcrumbList>
           </Breadcrumb>
           <div className="relative ml-auto flex-1 md:grow-0"></div>
-          <span>Address: {address}</span>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button

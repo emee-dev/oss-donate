@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "license": "MIT",
   "scripts": {
-    "dev": "dotenv -e .env.local pnpm hardhat node",
-    "compile": "dotenv -e .env.local pnpm hardhat compile",
-    "deploy:local": "dotenv -e .env.local npx hardhat run scripts/deploy.ts --network localhost",
-    "deploy:alfajores": "dotenv -e .env.local npx hardhat run scripts/deploy.ts --network alfajores",
-    "deploy:mainnet": "dotenv -e .env.local npx hardhat run scripts/deploy.ts --network celo"
+    "dev": "pnpm hardhat node",
+    "compile": "pnpm hardhat compile",
+    "deploy:local": "hardhat run scripts/deploy.ts --network localhost",
+    "deploy:alfajores": "hardhat run scripts/deploy.ts --network alfajores",
+    "deploy:mainnet": "hardhat run scripts/deploy.ts --network celo"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^1.0.0",

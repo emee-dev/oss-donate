@@ -42,17 +42,12 @@ type Json = {
   };
 };
 
-type ComponentProps = {
-  params: {};
-  children: React.ReactNode;
-};
-
 type GithubApi = {
   github: GithubResponse | null;
   success: boolean;
 };
 
-const VerifyModal = (props: ComponentProps) => {
+const VerifyModal = () => {
   let [account, setAccountInfo] = useContext();
   let [object, setObject] = useState<string>("");
   const { getValue, setValue } = useLocalStorage();
