@@ -43,8 +43,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-// import abi from "@/artifacts/contracts/OSSFunding.sol/OSSFunding.json";
-// import { supabase } from "@/utils/supabase/client";
 import abi from "@/abi/sample";
 
 import {
@@ -69,7 +67,7 @@ import {
   useWatchContractEvent,
 } from "wagmi";
 import { useEffect, useState } from "react";
-import { publicClient } from "@/providers/client";
+import { publicClient } from "@/providers/constants";
 import { parseEther, parseGwei } from "viem";
 import { hardhat } from "viem/chains";
 import { AnyARecord } from "dns";
@@ -86,9 +84,6 @@ function Dashboard() {
 
   const [userAddress, setUserAddress] = useState("");
   const [isMounted, setIsMounted] = useState(false);
-  // const { data } = useBalance({
-  //   address: "0x2d3f8696dC44B24f47E6173bA156FEDa32278D6C",
-  // });
 
   // const { data: ReadData } = useReadContract({
   //   abi: abi.abi,
@@ -99,31 +94,17 @@ function Dashboard() {
 
   const { data, isPending, writeContractAsync } = useWriteContract({});
 
-  const { address, isConnected } = useAccount();
-
-  // const {
-  //   data: hash,
-  //   sendTransaction,
-  //   sendTransactionAsync,
-  // } = useSendTransaction();
-
-  const unwatch = publicClient.watchContractEvent({
-    address: "0x5fbdb2315678afecb367f032d93f642f64180aa3",
-    abi: abi as any,
-    eventName: "MaintainerRegistered",
-    onLogs: (logs) => console.log("viem logs", logs),
-    // pollingInterval: 5000,
-  });
+  // const unwatch = publicClient.watchContractEvent({
+  //   address: "0x5fbdb2315678afecb367f032d93f642f64180aa3",
+  //   abi: abi as any,
+  //   eventName: "MaintainerRegistered",
+  //   onLogs: (logs) => console.log("viem logs", logs),
+  //   // pollingInterval: 5000,
+  // });
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  useEffect(() => {
-    if (isConnected && address) {
-      setUserAddress(address);
-    }
-  }, [address, isConnected]);
 
   useEffect(() => {
     if (data) {

@@ -44,9 +44,7 @@ const Hero = () => {
         let repo = req.data as GithubResponse;
 
         if (repo?.funding_file?.ossdonate) {
-          router.push(
-            `/claim?action=donate&repo=${urlEncode(payload.github_repo)}`
-          );
+          router.push(`/repo/donate?repo=${urlEncode(payload.github_repo)}`);
         }
 
         console.log("github repo", repo);

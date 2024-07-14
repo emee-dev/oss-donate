@@ -47,54 +47,71 @@ export type GithubResponse = {
 };
 
 export async function POST(request: Request) {
-  let body = (await request.json()) as Payload | null;
+  try {
+    let body = (await request.json()) as Payload | null;
 
-  if (!body) {
+    if (!body) {
+      return Response.json(
+        {
+          message: "Please provide github repo link",
+          funding_file: null,
+          github_repo: null,
+        },
+        {
+          status: 402,
+        }
+      );
+    }
+
+    let isGithubRepo = extractGitHubRepoInfo(body.github_repo);
+
+    if (!isGithubRepo) {
+      return Response.json(
+        {
+          message: "Please provide a valid github repo link",
+          funding_file: null,
+          github_repo: null,
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    let { owner, repo } = isGithubRepo;
+
+    let projectInfo = (await fetchFundingFile(owner, repo)) as
+      | GithubResponse["funding_file"]
+      | null;
+
+    if (!projectInfo) {
+      return Response.json(
+        {
+          message: "Could not find Funding.json file, please add to project.",
+          funding_file: null,
+          github_repo: null,
+        },
+        {
+          status: 200,
+        }
+      );
+    }
+
+    return Response.json({
+      message: "Github repo resolved successfully",
+      funding_file: projectInfo,
+      github_repo: isGithubRepo,
+    });
+  } catch (e: any) {
     return Response.json(
       {
-        message: "Please provide github repo link",
-      },
-      {
-        status: 402,
-      }
-    );
-  }
-
-  let isGithubRepo = extractGitHubRepoInfo(body.github_repo);
-
-  if (!isGithubRepo) {
-    return Response.json(
-      {
-        message: "Please provide a valid github repo link",
-      },
-      {
-        status: 404,
-      }
-    );
-  }
-
-  let { owner, repo } = isGithubRepo;
-
-  let projectInfo = (await fetchFundingFile(owner, repo)) as
-    | GithubResponse["funding_file"]
-    | null;
-
-  if (!projectInfo) {
-    return Response.json(
-      {
-        message: "Third party error",
+        message: e.message,
+        funding_file: null,
+        github_repo: null,
       },
       {
         status: 500,
       }
     );
   }
-
-  console.log(projectInfo);
-
-  return Response.json({
-    message: "Github repo resolved successfully",
-    funding_file: projectInfo,
-    github_repo: isGithubRepo,
-  });
 }

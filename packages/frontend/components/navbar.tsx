@@ -1,8 +1,6 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import useTheme from "@/hooks/use-theme";
-import { cn } from "@/lib/utils";
 import { GithubIcon, UserRoundPlus } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./ui/button";
@@ -146,7 +144,7 @@ const Navbar = () => {
               </SelectItem>
             </SelectContent>
           </Select> */}
-          <Link href="/claim?action=claim">
+          <Link href="/repo/claim">
             <Button size="sm">
               Claim Project
               <UserRoundPlus className="w-4 h-4 ml-3" />

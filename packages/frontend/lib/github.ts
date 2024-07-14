@@ -1,5 +1,12 @@
+import { GithubResponse } from "@/app/api/route";
 import axios from "axios";
 import { Buffer } from "buffer";
+
+type GithubNotFound = {
+  message: string;
+  funding_file: null;
+  github_repo: null;
+};
 
 export async function fetchFundingFile(
   owner: string,
@@ -22,7 +29,19 @@ export async function fetchFundingFile(
     return jsonContent;
   } catch (error: any) {
     console.error(`Error fetching file: ${error.message}`);
-    return null;
+
+    if (axios.isAxiosError(error)) {
+      if (error.status === 404) {
+        // If FUNDING.json file is not found do not error out
+        return Promise.resolve({
+          message: "Not found",
+          funding_file: null,
+          github_repo: null,
+        } as GithubNotFound);
+      }
+    } else {
+      return Promise.reject(error);
+    }
   }
 }
 

@@ -17,20 +17,20 @@ const config: HardhatUserConfig = {
       chainId: 1337,
       loggingEnabled: true,
     },
-    // alfajores: {
-    //   url: "https://alfajores-forno.celo-testnet.org",
-    //   accounts: [process.env.PRIVATE_KEY!],
-    //   chainId: 44787,
-    // },
-    // celo: {
-    //   url: "https://forno.celo.org",
-    //   accounts: [process.env.PRIVATE_KEY!],
-    //   // accounts: {
-    //   //   mnemonic: process.env.MNEMONIC,
-    //   //   path: "m/44'/52752'/0'/0",
-    //   // },
-    //   chainId: 42220,
-    // },
+    alfajores: {
+      url: "https://alfajores-forno.celo-testnet.org",
+      accounts: [process.env.PRIVATE_KEY!],
+      chainId: 44787,
+    },
+    celo: {
+      url: "https://forno.celo.org",
+      accounts: [process.env.PRIVATE_KEY!],
+      // accounts: {
+      //   mnemonic: process.env.MNEMONIC,
+      //   path: "m/44'/52752'/0'/0",
+      // },
+      chainId: 42220,
+    },
   },
   // etherscan: {
   //     apiKey: {
