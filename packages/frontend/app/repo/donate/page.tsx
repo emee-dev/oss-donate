@@ -1,6 +1,6 @@
 "use client";
 
-import abi from "@/abi/sample";
+import abi from "@/artifacts/contracts/OSSFunding.sol/OSSFunding.json";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -17,9 +17,11 @@ import { useMutation } from "@tanstack/react-query";
 import { m as motion } from "framer-motion";
 import { ArrowUpDown, Loader } from "lucide-react";
 import dynamic from "next/dynamic";
-import { ChangeEvent, SyntheticEvent, useState } from "react";
+import { ChangeEvent, SyntheticEvent, useEffect, useState } from "react";
 import { useWriteContract } from "wagmi";
 import { GithubResponse } from "../../api/route";
+import { CONTRACT_ADDRESS } from "../claim/page";
+import { useWeb3Context } from "@/context";
 
 const STABLE_TOKEN_ADDRESS = "0x765DE816845861e75A25fCA122bb6898B8B1282a";
 
@@ -51,8 +53,7 @@ type Coins = "ngn" | "cusd";
 type CusdProp = { cusdAmt: number };
 
 function DonationModal() {
-  let isError = false;
-  const { setValue: setLocal } = useLocalStorage();
+  const { account } = useWeb3Context();
   let [inputvalue, setInputvalue] = useState<number>(5);
   let [currentCoin, setCurrentCoin] = useState<Coins>("cusd");
   let { debouncedValue, setValue } = useDebouncedInput({ seconds: 500 });
@@ -61,6 +62,7 @@ function DonationModal() {
   const {
     data: basePrice,
     isPending,
+    isError,
     mutate: checkBasePrice,
   } = useMutation<number | null, null, CusdProp>({
     mutationKey: ["price_check"],
@@ -94,16 +96,16 @@ function DonationModal() {
 
   const convertCusdToNgn = (cusdAmt: number) => mutate({ cusdAmt });
 
-  // useEffect(() => {
-  //   checkBasePrice({ cusdAmt: 1 });
-  //   convertCusdToNgn(inputvalue);
-  // }, []);
+  useEffect(() => {
+    checkBasePrice({ cusdAmt: 1 });
+    convertCusdToNgn(inputvalue);
+  }, []);
 
-  // useEffect(() => {
-  //   if (debouncedValue) {
-  //     convertCusdToNgn(debouncedValue);
-  //   }
-  // }, [debouncedValue]);
+  useEffect(() => {
+    if (debouncedValue) {
+      convertCusdToNgn(debouncedValue);
+    }
+  }, [debouncedValue]);
 
   const onInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     let value = e.target.valueAsNumber;
@@ -126,10 +128,10 @@ function DonationModal() {
     console.log(value);
 
     await writeContractAsync({
-      abi: abi,
-      address: "0x",
+      address: CONTRACT_ADDRESS,
+      abi: abi.abi,
       functionName: "contributeToProject",
-      args: ["", "0x"],
+      args: [account?.repo, account?.address],
     });
   };
 

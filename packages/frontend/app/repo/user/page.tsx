@@ -58,6 +58,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useWriteContract } from "wagmi";
+import abi from "@/artifacts/contracts/OSSFunding.sol/OSSFunding.json";
 
 function Dashboard() {
   let { account, setAccountRepo } = useWeb3Context();

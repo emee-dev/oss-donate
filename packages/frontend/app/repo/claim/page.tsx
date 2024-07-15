@@ -29,7 +29,7 @@ import { hardhat, localhost } from "viem/chains";
 import { publicClient, walletClient, config } from "@/providers/constants";
 
 const STABLE_TOKEN_ADDRESS = "0x765DE816845861e75A25fCA122bb6898B8B1282a";
-const CONTRACT_ADDRESS = "0x9Ea6f574f06dF5C90d89447f1D7C623194AddaE3";
+export const CONTRACT_ADDRESS = "0x9Ea6f574f06dF5C90d89447f1D7C623194AddaE3";
 
 type Json = {
   ossdonate: {
