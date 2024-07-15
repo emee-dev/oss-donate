@@ -1,11 +1,13 @@
 import { connectorsForWallets } from "@rainbow-me/rainbowkit";
 import { injectedWallet } from "@rainbow-me/rainbowkit/wallets";
-// import { createConfig, http } from "@wagmi/core";
-import { createConfig, http } from "wagmi";
-import { celo, celoAlfajores } from "@wagmi/core/chains";
+import { createConfig as ccreateConfig } from "@wagmi/core";
+// import { createConfig, http } from "wagmi";
+import { createConfig, http } from "@wagmi/core";
+import { celo, celoAlfajores, localhost } from "@wagmi/core/chains";
 import { createPublicClient, createWalletClient, custom } from "viem";
 import { celoAlfajores as vCeloAlfajores } from "viem/chains";
 import { hardhat } from "wagmi/chains";
+import { privateKeyToAccount } from "viem/accounts";
 
 export const MGCADDRESS = process.env
   .NEXT_PUBLIC_GIFT_CARD_ADDRESS as `0x${string}`;
@@ -24,36 +26,37 @@ export const publicClient = createPublicClient({
 //   transport: http(),
 // }); // Mainnet
 
-// export const config = createConfig({
-//   chains: [celo, celoAlfajores],
-//   transports: {
-//     [celo.id]: http(),
-//     [celoAlfajores.id]: http(),
-//   },
-// });
-
-export const connectors = connectorsForWallets(
-  [
-    {
-      groupName: "Recommended",
-      wallets: [injectedWallet],
-    },
-  ],
-  {
-    appName: "OSSDonate",
-    projectId: "044601f65212332475a09bc14ceb3c34",
-  }
-);
-
 export const config = createConfig({
-  connectors: connectors,
-  chains: [celo, celoAlfajores, hardhat],
+  chains: [celo, celoAlfajores],
   transports: {
     [celo.id]: http(),
     [celoAlfajores.id]: http(),
-    [hardhat.id]: http(),
   },
 });
+
+// export const connectors = connectorsForWallets(
+//   [
+//     {
+//       groupName: "Recommended",
+//       wallets: [injectedWallet],
+//     },
+//   ],
+//   {
+//     appName: "OSSDonate",
+//     projectId: "044601f65212332475a09bc14ceb3c34",
+//   }
+// );
+
+// export const config = createConfig({
+//   connectors: connectors,
+//   chains: [celo, celoAlfajores, localhost],
+//   transports: {
+//     [celo.id]: http(),
+//     [celoAlfajores.id]: http(),
+//     // [hardhat.id]: http("http://127.0.0.1:8545/"),
+//     [localhost.id]: http(),
+//   },
+// });
 
 export const RPC =
   process.env.NEXT_PUBLIC_ENVIRONMENT === "TESTNET"

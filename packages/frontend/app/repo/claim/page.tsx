@@ -1,6 +1,7 @@
 "use client";
 
-import abi from "@/abi/sample";
+// import abi from "@/abi/sample";
+import abi from "@/artifacts/contracts/OSSFunding.sol/OSSFunding.json";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,20 +12,24 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useContext } from "@/hooks/useTheme";
+import { useWeb3Context } from "@/context";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { LazyMotion, domAnimation, m as motion } from "framer-motion";
 import { ArrowRight, Github, Loader } from "lucide-react";
 import dynamic from "next/dynamic";
-import { SyntheticEvent } from "react";
+import { SyntheticEvent, useEffect, useState } from "react";
 import { readContract } from "@wagmi/core";
 
 import { GithubResponse } from "../../api/route";
 import { useReadContract, useWriteContract } from "wagmi";
-import { config } from "@/providers/constants";
+// import { config } from "@/providers/client";
+import Link from "next/link";
+import { hardhat, localhost } from "viem/chains";
+import { publicClient, walletClient, config } from "@/providers/constants";
 
 const STABLE_TOKEN_ADDRESS = "0x765DE816845861e75A25fCA122bb6898B8B1282a";
+const CONTRACT_ADDRESS = "0x9Ea6f574f06dF5C90d89447f1D7C623194AddaE3";
 
 type Json = {
   ossdonate: {
@@ -40,15 +45,20 @@ type GithubApi = {
 };
 
 const ClaimModal = () => {
-  let [account, setAccountInfo] = useContext();
+  let { account, setAccountRepo } = useWeb3Context();
+  let [projectBalance, setProjectBalance] = useState<string>("");
 
   const {
     data: hash,
     isPending: contractIsPending,
+    error,
     writeContract,
   } = useWriteContract();
 
-  //   const read = useReadContract();
+  useEffect(() => {
+    console.log("hash", hash);
+    console.log("error", error?.message);
+  }, [hash, error]);
 
   const { data, isPending, isError, mutate } = useMutation<
     GithubApi,
@@ -72,15 +82,21 @@ const ClaimModal = () => {
           return Promise.resolve({ github: null, file: "missing" });
         }
 
-        // @ts-expect-error
-        let balance = await readContract(config, {
-          abi,
-          address: "0x6b175474e89094c44da98b954eedeac495271d0f",
+        let project = await readContract(config, {
+          abi: abi.abi,
+          address: CONTRACT_ADDRESS,
           functionName: "getProjectMaintainer",
-          args: [payload.github_repo],
+          args: ["https://github.com/emee-dev/treblle-monorepo"],
         });
 
-        console.log("balance", balance);
+        if (!project) {
+          return Promise.reject(null);
+        }
+
+        // @ts-expect-error
+        let balance = project[1].toString();
+
+        setProjectBalance(balance);
 
         return Promise.resolve({
           github: data,
@@ -100,6 +116,7 @@ const ClaimModal = () => {
     let value = form.get("repo") as string;
 
     mutate({ github_repo: value });
+    setAccountRepo(value);
   };
 
   return (
@@ -168,23 +185,22 @@ const ClaimModal = () => {
                       CLAIMABLE TOKENS
                     </span>
                     <div className="flex">
-                      <span className="text-neutral-400">NONE</span>
+                      <span className="text-neutral-400">
+                        {`${"$ " + projectBalance}` || "NONE"}
+                      </span>
 
                       <Button
                         size="sm"
                         variant={"outline"}
                         type="button"
+                        disabled={projectBalance === "0"}
                         className="py-3 ml-auto"
-                        onClick={() => {
+                        onClick={async () => {
                           writeContract({
-                            address:
-                              "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-                            abi: abi,
+                            address: CONTRACT_ADDRESS,
+                            abi: abi.abi,
                             functionName: "liquidateProject",
-                            args: [
-                              "https://github.com/emee-dev/treblle-monorepo",
-                              account?.address as `0x${string}`,
-                            ],
+                            args: [account?.repo, account?.address],
                           });
                         }}
                       >
@@ -256,9 +272,11 @@ const ClaimModal = () => {
             )}
 
             {!isError && data && data.file === "missing" && (
-              <Button className="w-40 ml-auto" type="submit">
-                <ArrowRight size={18} className="mr-3" /> Claim project
-              </Button>
+              <Link href="repo/verify">
+                <Button className="w-40 ml-auto" type="submit">
+                  <ArrowRight size={18} className="mr-3" /> Claim project
+                </Button>
+              </Link>
             )}
           </CardFooter>
         </motion.form>

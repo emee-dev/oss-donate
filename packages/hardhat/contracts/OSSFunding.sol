@@ -45,10 +45,7 @@ contract OSSFunding {
     );
 
     function registerProject(string memory repo, address maintainer) public {
-        require(
-            !github_repo[repo].registered,
-            "Project was already registered"
-        );
+        // require(!github_repo[repo].registered, "Project was already registered");
 
         github_repo[repo] = GithubRepo({
             maintainer: payable(maintainer),
@@ -90,6 +87,17 @@ contract OSSFunding {
         string memory repo
     ) public view returns (address, uint256) {
         return (github_repo[repo].maintainer, github_repo[repo].stored_value);
+    }
+
+    function isProjectMaintainer(
+        string memory repo,
+        address user_address
+    ) public view returns (bool) {
+        if (github_repo[repo].maintainer == user_address) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     function liquidateProject(

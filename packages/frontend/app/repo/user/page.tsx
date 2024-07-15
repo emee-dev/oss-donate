@@ -41,6 +41,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useWeb3Context } from "@/context";
+import { useContext } from "@/hooks/useTheme";
 
 import {
   File,
@@ -58,6 +60,7 @@ import { useEffect, useState } from "react";
 import { useWriteContract } from "wagmi";
 
 function Dashboard() {
+  let { account, setAccountRepo } = useWeb3Context();
   // useWatchContractEvent({
   //   address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
   //   abi: abi,
@@ -66,9 +69,6 @@ function Dashboard() {
   //     console.log("New maintainer log", logs);
   //   },
   // });
-
-  const [userAddress, setUserAddress] = useState("");
-  const [isMounted, setIsMounted] = useState(false);
 
   // const { data: ReadData } = useReadContract({
   //   abi: abi.abi,
@@ -86,20 +86,6 @@ function Dashboard() {
   //   onLogs: (logs) => console.log("viem logs", logs),
   //   // pollingInterval: 5000,
   // });
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (data) {
-      console.log("data", data);
-    }
-  }, [data]);
-
-  if (!isMounted) {
-    return null;
-  }
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -170,7 +156,7 @@ function Dashboard() {
             <div className="flex items-center">
               <TabsList>
                 <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="tasks">Tasks</TabsTrigger>
+                <TabsTrigger value="merch">Merch</TabsTrigger>
               </TabsList>
               <div className="ml-auto flex items-center gap-2">
                 <Button

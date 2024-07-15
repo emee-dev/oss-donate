@@ -29,6 +29,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { SyntheticEvent, useEffect, useState } from "react";
 import { GithubResponse } from "../../api/route";
+import { useWeb3Context } from "@/context";
 
 const STABLE_TOKEN_ADDRESS = "0x765DE816845861e75A25fCA122bb6898B8B1282a";
 
@@ -48,7 +49,7 @@ type GithubApi = {
 };
 
 const VerifyModal = () => {
-  let [account, setAccountInfo] = useContext();
+  let { account, setAccountRepo } = useWeb3Context();
   let [object, setObject] = useState<string>("");
   const { getValue, setValue } = useLocalStorage();
   const { copied, copyToClipboard } = useCopyToClipboard();
