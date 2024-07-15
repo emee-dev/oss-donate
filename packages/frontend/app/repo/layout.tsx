@@ -10,7 +10,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import * as React from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAccount, useConnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 
@@ -33,6 +33,7 @@ import {
 import useMediaQuery from "@/hooks/use-media-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 type ComponentProps = {
   params: {};
@@ -43,7 +44,9 @@ const Repository = ({ children }: ComponentProps) => {
   let { address, status } = useAccount();
   let { setAccountAddress } = useWeb3Context();
   const { connect } = useConnect();
+  const [hidden, setHidden] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (window.ethereum) {
@@ -59,10 +62,17 @@ const Repository = ({ children }: ComponentProps) => {
     }
   }, [address]);
 
+  useEffect(() => {
+    if (pathname === "/repo/user") {
+      setHidden(true);
+      console.log("pathname", pathname);
+    }
+  }, [pathname]);
+
   return (
     <div className="flex flex-1 relative bg-muted h-screen justify-center items-center font-mono">
       <div className="absolute right-8 top-5">
-        <DrawerDialogDemo />
+        {!hidden && <DrawerDialogDemo />}
       </div>
       {children}
     </div>
@@ -70,7 +80,7 @@ const Repository = ({ children }: ComponentProps) => {
 };
 
 export function DrawerDialogDemo() {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   if (isDesktop) {

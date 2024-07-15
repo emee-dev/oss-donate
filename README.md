@@ -2,6 +2,10 @@
 
 This project is a decentralized application (dApp) built for the "Build with Celo: Transform rewards and loyalty" hackathon. It allows users to donate cUSD to their favorite open-source projects or libraries. Contributors receive nfts as rewards, which can be used for prioritized feature requests and assistance in community help channels.
 
+## Inspiration
+
+My inspiration for this project comes from the difficulty open source maintainers face in receiving funding. Payment platforms like PayPal and Stripe are challenging to use in Nigeria. I found CELO's documentation easy to understand, so I chose it for this project. This platform aims to help OSS maintainers receive contributions from anyone, anywhere, using CELO.
+
 ## Features
 
 1. **Donation System:**
@@ -26,7 +30,7 @@ This project is a decentralized application (dApp) built for the "Build with Cel
 
 ## Disclaimer
 
-Aside the landing page, theme colors. I created the rest of the project despite my lack of knowledge.
+Aside the landing page, theme colors. I created the rest of the project. This project is still `TEST` mode as such should not be used in production environment because security and other advanced features have not been put in place for advanced usage.
 
 ## Getting Started
 
@@ -68,11 +72,11 @@ Aside the landing page, theme colors. I created the rest of the project despite 
 5. Deploy the smart contracts to the contract:
 
    ```bash
-   pnpm run hardhat:localhost // hardhat localhost network
+   pnpm run hardhat:local // hardhat localhost network
 
    or
 
-    pnpm run hardhat:localhost // Celo testnet alfjores
+    pnpm run hardhat:alfajores // Celo testnet alfajores
 
    or
 

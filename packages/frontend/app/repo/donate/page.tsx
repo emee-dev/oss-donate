@@ -10,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ToastAction } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/use-toast";
 import { useWeb3Context } from "@/context";
 import useDebouncedInput from "@/hooks/useDebouncedInput";
 import { convertCusdtoNaira } from "@/lib/crypto";
@@ -17,22 +19,20 @@ import { urlDecode } from "@/lib/github";
 import {
   CONTRACT_ADDRESS,
   STABLE_TOKEN_ADDRESS,
-  checkCUSDBalance,
-  estimateGas,
-  gasPrice,
+  calculateTransactionCost,
   publicClient,
+  transactionReciept,
 } from "@/providers/constants";
 import { useMutation } from "@tanstack/react-query";
 import { m as motion } from "framer-motion";
 import { ArrowUpDown, Loader } from "lucide-react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, SyntheticEvent, useEffect, useState } from "react";
 import { parseEther } from "viem";
 import { useWriteContract } from "wagmi";
 import { GithubResponse } from "../../api/route";
-import { useToast } from "@/components/ui/use-toast";
-import { ToastAction } from "@/components/ui/toast";
 
 const Celo = dynamic(() => import("@/components/icons/celo"));
 const CopyIcon = dynamic(() => import("@/components/icons/copy"));
@@ -68,11 +68,14 @@ type ComponentProps = {
 
 function DonationModal(props: ComponentProps) {
   const { account, setAccountRepo } = useWeb3Context();
-  // let [inputvalue, setInputvalue] = useState<number>(5);
   let [inputvalue, setInputvalue] = useState<number>(1);
   let [currentCoin, setCurrentCoin] = useState<Coins>("cusd");
   let { debouncedValue, setValue } = useDebouncedInput({ seconds: 500 });
-  const { data: hash, writeContractAsync } = useWriteContract();
+  const {
+    data: hash,
+    isPending: writeIsPending,
+    writeContractAsync,
+  } = useWriteContract();
   const router = useRouter();
   const { toast } = useToast();
 
@@ -125,10 +128,15 @@ function DonationModal(props: ComponentProps) {
 
   useEffect(() => {
     if (hash) {
+      console.log("hash", hash);
       toast({
         title: "Donation",
         description: "Thank you for your kind donation.",
-        action: <ToastAction altText="Reciept">Try again</ToastAction>,
+        action: (
+          <Link href={transactionReciept(hash)}>
+            <ToastAction altText="Reciept">View Receipt</ToastAction>
+          </Link>
+        ),
       });
     }
   }, [hash]);
@@ -146,10 +154,10 @@ function DonationModal(props: ComponentProps) {
 
   const onInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     let value = e.target.valueAsNumber;
-    if (!value || value <= 0) {
-      setInputvalue(1);
-      return;
-    }
+    // if (!value || value <= 0) {
+    //   setInputvalue(1);
+    //   return;
+    // }
     setValue(value); // debounced value
     setInputvalue(value);
   };
@@ -162,28 +170,28 @@ function DonationModal(props: ComponentProps) {
 
     let value = form.get("currentCoin") as string;
 
-    // let bal = await checkCUSDBalance(publicClient, account?.ownAddress!);
+    const { isSufficientFunds, totalCost } = await calculateTransactionCost(
+      publicClient,
+      account!,
+      CONTRACT_ADDRESS,
+      STABLE_TOKEN_ADDRESS,
+      value
+    );
 
-    // let gasEstimate = estimateGas(publicClient, {
-    //   data: "0x" as any,
-    //   account: account?.ownAddress! as any,
-    //   to: CONTRACT_ADDRESS as any,
-    //   stable_token_address: STABLE_TOKEN_ADDRESS as any,
-    //   value: parseEther(value),
-    // });
-
-    // console.log(gasEstimate);
-
-    let gas = await gasPrice();
-    // const totalCost = gasEstimate * gas + parseEther(value);
-
-    console.log("gas", gas);
-
-    toast({
-      title: "Donation",
-      description: "Thank you for your kind donation.",
-      action: <ToastAction altText="Reciept">Try again</ToastAction>,
-    });
+    if (!isSufficientFunds) {
+      console.error("Insufficient funds for gas * price + value");
+      toast({
+        title: "Oops Insufficient funds",
+        description: "Please topup to donate",
+        variant: "destructive",
+        action: (
+          <Link href={"https://minipay.opera.com/add_cash"}>
+            <ToastAction altText="Reciept">Account topup</ToastAction>
+          </Link>
+        ),
+      });
+      return;
+    }
 
     await writeContractAsync({
       address: CONTRACT_ADDRESS,
@@ -215,10 +223,11 @@ function DonationModal(props: ComponentProps) {
                 id="amount"
                 type="number"
                 name="currentCoin"
-                min={0}
+                // min={0}
                 value={inputvalue}
                 onChange={(e) => onInputChange(e)}
                 placeholder="Enter amount"
+                required
                 className="w-full remove-arrow"
               />
             </div>
@@ -273,7 +282,8 @@ function DonationModal(props: ComponentProps) {
           </p>
         </div>
         <Button className="w-full" type="submit">
-          Donate
+          {writeIsPending && "Donating..."}
+          {!writeIsPending && "Donate"}
         </Button>
         <p className="text-center text-sm text-muted-foreground">
           Powered By{" "}

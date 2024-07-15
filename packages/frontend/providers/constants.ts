@@ -10,11 +10,13 @@ import {
   custom,
   formatEther,
   getContract,
+  parseEther,
 } from "viem";
 import { celoAlfajores as vCeloAlfajores } from "viem/chains";
 import { hardhat } from "wagmi/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { stableTokenABI } from "@celo/abis";
+import { Web3Account } from "@/context/useAccount";
 
 export const MGCADDRESS = process.env
   .NEXT_PUBLIC_GIFT_CARD_ADDRESS as `0x${string}`;
@@ -80,7 +82,7 @@ export async function checkCUSDBalance(
   let balanceInWei = balanceInBigNumber.toString();
 
   // @ts-expect-error
-  let balanceInEthers = formatEther(balanceInWei, "wei");
+  let balanceInEthers = formatEther(balanceInWei);
 
   return balanceInEthers;
 }
@@ -88,7 +90,7 @@ export async function checkCUSDBalance(
 type Transaction = {
   account: "0x${string}";
   to: "0x${string}";
-  value: bigint;
+  value?: bigint;
   data: "0x${string}";
   stable_token_address: "0x${string}";
 };
@@ -106,6 +108,49 @@ export async function estimateGas(
   });
 }
 
-export const gasPrice = async () => {
+export const getGasPrice = async () => {
   return await publicClient.getGasPrice();
 };
+
+export const transactionReciept = (hash: `0x${string}`) => {
+  if (process.env.NEXT_PUBLIC_ENVIRONMENT === "TESTNET") {
+    return `https://alfajores.celoscan.io/tx/${hash}`;
+  } else {
+    return `https://celoscan.io/tx/${hash}`;
+  }
+};
+
+export async function calculateTransactionCost(
+  client: typeof publicClient,
+  account: Web3Account,
+  contractAddress: `0x${string}`,
+  stableTokenAddress: `0x${string}`,
+  value: string
+) {
+  // Estimate gas for the transaction
+  const gasEstimate = await estimateGas(client, {
+    data: "0x" as any,
+    account: account?.ownAddress! as any,
+    to: contractAddress as any,
+    stable_token_address: stableTokenAddress as any,
+  });
+
+  // Get current gas price
+  const gasPrice = await client.getGasPrice();
+
+  // Parse the value to be sent
+  const parsedValue = parseEther(value);
+
+  // Calculate the total cost of the transaction
+  const totalCost = gasEstimate * gasPrice + parsedValue;
+
+  // Get the account balance
+  const accountBalance = await client.getBalance({
+    address: account?.ownAddress!,
+  });
+
+  // Check if the account balance is sufficient
+  const isSufficientFunds = accountBalance >= totalCost;
+
+  return { isSufficientFunds, totalCost };
+}

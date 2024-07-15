@@ -25,6 +25,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+import { MoreHorizontal } from "lucide-react";
+import Image from "next/image";
+
+import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Table,
@@ -42,34 +47,25 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useWeb3Context } from "@/context";
-import { useContext } from "@/hooks/useTheme";
 
 import {
   File,
   Home,
-  MoreHorizontal,
   Package2,
   PanelLeft,
   PlusCircle,
   Settings,
   ShoppingCart,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { useWriteContract } from "wagmi";
-import abi from "@/artifacts/contracts/OSSFunding.sol/OSSFunding.json";
 
-function Dashboard() {
+type ComponentProps = {
+  params: {};
+  searchParams: { repo: string | null };
+};
+function Dashboard(props: ComponentProps) {
   let { account, setAccountRepo } = useWeb3Context();
-  // useWatchContractEvent({
-  //   address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-  //   abi: abi,
-  //   eventName: "MaintainerRegistered",
-  //   onLogs(logs) {
-  //     console.log("New maintainer log", logs);
-  //   },
-  // });
 
   // const { data: ReadData } = useReadContract({
   //   abi: abi.abi,
@@ -160,41 +156,23 @@ function Dashboard() {
                 <TabsTrigger value="merch">Merch</TabsTrigger>
               </TabsList>
               <div className="ml-auto flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={isPending}
-                  className="h-7 gap-1"
-                  onClick={async () => {
-                    console.log("Clicked");
-                    // const { data } = await supabase.storage
-                    //   .from("images")
-                    //   .createSignedUrl("Image_B.jpg", 60, {
-                    //     download: true,
-                    //   });
-                    // Multiple files
-                    // const { data, error } = await supabase.storage
-                    //   .from("avatars")
-                    //   .createSignedUrls(
-                    //     ["folder/avatar1.png", "folder/avatar2.png"],
-                    //     60
-                    //   );
-                    // console.log("Signed url: ", data);
-                    // Shows an alert of the address balance in WEI
-                  }}
-                >
-                  <File className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    {isPending ? "Submitting" : "Add a task"}
-                  </span>
-                </Button>
+                <Link href="/repo/user/new-merch">
+                  <Button size="sm" variant="outline" className="h-7 gap-1">
+                    <File className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                      Add a merch
+                    </span>
+                  </Button>
+                </Link>
 
-                <Button size="sm" className="h-7 gap-1">
-                  <PlusCircle className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Add a repo
-                  </span>
-                </Button>
+                <Link href="/repo/verify">
+                  <Button size="sm" className="h-7 gap-1">
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                      Link new repo
+                    </span>
+                  </Button>
+                </Link>
               </div>
             </div>
             <TabsContent value="all">
@@ -220,14 +198,48 @@ function Dashboard() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      <Rows />
+                      <ProjectTableRow />
                     </TableBody>
                   </Table>
                 </CardContent>
                 <CardFooter>
                   <div className="text-xs text-muted-foreground">
-                    Showing <strong>1-10</strong> of <strong>32</strong>{" "}
-                    products
+                    Start sharing your github link so people can donate to you.
+                  </div>
+                </CardFooter>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="merch">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Projects</CardTitle>
+                  <CardDescription>
+                    Manage your projects and view their earnings.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="hidden w-[200px] sm:table-cell">
+                          <span className="sr-only">Image</span>
+                        </TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Created at</TableHead>
+                        {/* <TableHead>
+                          <span className="sr-only">Actions</span>
+                        </TableHead> */}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <MerchTableRow />
+                    </TableBody>
+                  </Table>
+                </CardContent>
+                <CardFooter>
+                  <div className="text-xs text-muted-foreground">
+                    Start sharing your github link so people can buy your merch.
                   </div>
                 </CardFooter>
               </Card>
@@ -239,24 +251,15 @@ function Dashboard() {
   );
 }
 
-const Rows = () => {
+const ProjectTableRow = () => {
   return (
     <TableRow>
-      {/* <TableCell className="hidden sm:table-cell">
-        <Image
-          alt="Product image"
-          className="aspect-square rounded-md object-cover"
-          height="64"
-          src="https://placeholder.pics/svg/64x64"
-          width="64"
-        />
-      </TableCell> */}
       <TableCell className="font-medium">Laser Lemonade Machine</TableCell>
       <TableCell>$499.99</TableCell>
       <TableCell className="hidden md:table-cell">
         2023-07-12 10:42 AM
       </TableCell>
-      <TableCell>
+      {/* <TableCell>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button aria-haspopup="true" size="icon" variant="ghost">
@@ -268,6 +271,38 @@ const Rows = () => {
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem>Edit</DropdownMenuItem>
             <DropdownMenuItem>Delete</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </TableCell> */}
+    </TableRow>
+  );
+};
+
+const MerchTableRow = () => {
+  return (
+    <TableRow>
+      <TableCell className="hidden sm:table-cell">
+        <Image
+          alt="Product image"
+          className="aspect-square rounded-md object-cover"
+          height="64"
+          src="/placeholder.svg"
+          width="64"
+        />
+      </TableCell>
+      <TableCell>$499.99</TableCell>
+      <TableCell>2022/19/06</TableCell>
+      <TableCell>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button aria-haspopup="true" size="icon" variant="ghost">
+              <MoreHorizontal className="h-4 w-4" />
+              <span className="sr-only">Toggle menu</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem>Edit</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </TableCell>

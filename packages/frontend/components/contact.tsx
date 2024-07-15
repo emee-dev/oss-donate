@@ -29,8 +29,8 @@ const Contact = () => {
         <p className="text-center text-lg text-muted-foreground lg:text-left">
           <span className="hidden lg:block">
             If you have any questions, suggestions, or would like to discuss
-            potential collaborations, please don't hesitate to reach out. I'd
-            love to hear from you!
+            potential collaborations, please {"don't"} hesitate to reach out.
+            {"I'd"} love to hear from you!
           </span>
           <span className="block lg:hidden">
             Questions, ideas, or collaborations? Reach out—I'm all ears!
