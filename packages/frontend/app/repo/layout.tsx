@@ -2,15 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import { useWeb3Context } from "@/context";
-import { useContext } from "@/hooks/useTheme";
 import { BookDashed } from "lucide-react";
+import * as React from "react";
 import { useEffect } from "react";
 import { useAccount, useConnect } from "wagmi";
 import { injected } from "wagmi/connectors";
-import * as React from "react";
 
-import { cn } from "@/lib/utils";
-import useMediaQuery from "@/hooks/use-media-query";
 import {
   Dialog,
   DialogContent,
@@ -21,16 +18,13 @@ import {
 } from "@/components/ui/dialog";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import useMediaQuery from "@/hooks/use-media-query";
 import Link from "next/link";
 
 const STABLE_TOKEN_ADDRESS = "0x765DE816845861e75A25fCA122bb6898B8B1282a";
@@ -136,6 +130,11 @@ const PageLinks = () => {
       <Link href="/repo/donate">
         <Button type="button" variant={"link"}>
           Donate
+        </Button>
+      </Link>
+      <Link href="/repo/user">
+        <Button type="button" variant={"link"}>
+          Dashboard
         </Button>
       </Link>
     </div>
