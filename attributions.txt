@@ -1,1 +1,7 @@
 <a href="https://www.flaticon.com/free-stickers/treasure" title="treasure stickers">Treasure stickers created by Gohsantosadrive - Flaticon</a>
+
+
+mainnet
+
+FreeMintNft Contract deployed to: 0x003BfE49a178CC7FE87916FFe7C231Ec39c75D34
+OSSFunding Contract deployed to: 0x3A911C9945DC3c6cf5B9FE31F5Abb4407982f7b1

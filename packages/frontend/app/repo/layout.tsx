@@ -2,7 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { useWeb3Context } from "@/context";
-import { BookDashed } from "lucide-react";
+import {
+  BookDashed,
+  HandCoins,
+  LayoutDashboard,
+  Pickaxe,
+  ShieldCheck,
+} from "lucide-react";
 import * as React from "react";
 import { useEffect } from "react";
 import { useAccount, useConnect } from "wagmi";
@@ -26,8 +32,7 @@ import {
 } from "@/components/ui/drawer";
 import useMediaQuery from "@/hooks/use-media-query";
 import Link from "next/link";
-
-const STABLE_TOKEN_ADDRESS = "0x765DE816845861e75A25fCA122bb6898B8B1282a";
+import { useRouter } from "next/navigation";
 
 type ComponentProps = {
   params: {};
@@ -37,8 +42,8 @@ type ComponentProps = {
 const Repository = ({ children }: ComponentProps) => {
   let { address, status } = useAccount();
   let { setAccountAddress } = useWeb3Context();
-
   const { connect } = useConnect();
+  const router = useRouter();
 
   useEffect(() => {
     if (window.ethereum) {
@@ -49,19 +54,14 @@ const Repository = ({ children }: ComponentProps) => {
   useEffect(() => {
     if (address) {
       setAccountAddress(address);
+    } else {
+      router.push("/");
     }
   }, [address]);
-
-  // if(!account) {
-  //   return
-  // }
 
   return (
     <div className="flex flex-1 relative bg-muted h-screen justify-center items-center font-mono">
       <div className="absolute right-8 top-5">
-        {/* <Button variant="outline" size="sm">
-          <BookDashed />
-        </Button> */}
         <DrawerDialogDemo />
       </div>
       {children}
@@ -77,8 +77,8 @@ export function DrawerDialogDemo() {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline">
-            <BookDashed />
+          <Button variant="outline" className="p-3">
+            <BookDashed size={"1.2rem"} />
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
@@ -88,7 +88,7 @@ export function DrawerDialogDemo() {
               Navigate to the appropriate page
             </DialogDescription>
           </DialogHeader>
-          <PageLinks />
+          <PageLinks setOpen={setOpen} />
         </DialogContent>
       </Dialog>
     );
@@ -97,8 +97,8 @@ export function DrawerDialogDemo() {
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button variant="outline">
-          <BookDashed />
+        <Button variant="outline" className="p-3">
+          <BookDashed size={"1.2rem"} />
         </Button>
       </DrawerTrigger>
       <DrawerContent>
@@ -108,36 +108,61 @@ export function DrawerDialogDemo() {
             Navigate to the appropriate page
           </DrawerDescription>
         </DrawerHeader>
-        <PageLinks />
+        <PageLinks setOpen={setOpen} />
       </DrawerContent>
     </Drawer>
   );
 }
 
-const PageLinks = () => {
+const PageLinks = (props: { setOpen: (st: boolean) => void }) => {
   return (
     <div className="flex flex-col">
+      <Link href="/repo/user">
+        <Button
+          type="button"
+          variant={"link"}
+          className="flex items-center"
+          onClick={() => props.setOpen(false)}
+        >
+          <LayoutDashboard size="1.1rem" className="mr-4" />
+          Dashboard
+        </Button>
+      </Link>
       <Link href="/repo/claim">
-        <Button type="button" variant={"link"}>
+        <Button
+          type="button"
+          variant={"link"}
+          className="flex items-center"
+          onClick={() => props.setOpen(false)}
+        >
+          <Pickaxe size="1.1rem" className="mr-4" />
           Claim
         </Button>
       </Link>
       <Link href="/repo/verify">
-        <Button type="button" variant={"link"}>
+        <Button
+          type="button"
+          variant={"link"}
+          className="flex items-center"
+          onClick={() => props.setOpen(false)}
+        >
+          <ShieldCheck size="1.1rem" className="mr-4" />
           Verify
         </Button>
       </Link>
       <Link href="/repo/donate">
-        <Button type="button" variant={"link"}>
+        <Button
+          type="button"
+          variant={"link"}
+          className="flex items-center"
+          onClick={() => props.setOpen(false)}
+        >
+          <HandCoins size="1.1rem" className="mr-4" />
           Donate
-        </Button>
-      </Link>
-      <Link href="/repo/user">
-        <Button type="button" variant={"link"}>
-          Dashboard
         </Button>
       </Link>
     </div>
   );
 };
+
 export default Repository;

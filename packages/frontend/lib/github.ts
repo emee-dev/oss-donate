@@ -1,4 +1,3 @@
-import { GithubResponse } from "@/app/api/route";
 import axios from "axios";
 import { Buffer } from "buffer";
 
@@ -62,4 +61,13 @@ export function extractGitHubRepoInfo(url: string) {
   } else {
     return null;
   }
+}
+
+export function urlEncode(str: string) {
+  return encodeURIComponent(str);
+}
+
+// Function to URL decode a string
+export function urlDecode(str: string) {
+  return decodeURIComponent(str);
 }

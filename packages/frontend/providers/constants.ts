@@ -4,10 +4,17 @@ import { createConfig as ccreateConfig } from "@wagmi/core";
 // import { createConfig, http } from "wagmi";
 import { createConfig, http } from "@wagmi/core";
 import { celo, celoAlfajores, localhost } from "@wagmi/core/chains";
-import { createPublicClient, createWalletClient, custom } from "viem";
+import {
+  createPublicClient,
+  createWalletClient,
+  custom,
+  formatEther,
+  getContract,
+} from "viem";
 import { celoAlfajores as vCeloAlfajores } from "viem/chains";
 import { hardhat } from "wagmi/chains";
 import { privateKeyToAccount } from "viem/accounts";
+import { stableTokenABI } from "@celo/abis";
 
 export const MGCADDRESS = process.env
   .NEXT_PUBLIC_GIFT_CARD_ADDRESS as `0x${string}`;
@@ -34,29 +41,11 @@ export const config = createConfig({
   },
 });
 
-// export const connectors = connectorsForWallets(
-//   [
-//     {
-//       groupName: "Recommended",
-//       wallets: [injectedWallet],
-//     },
-//   ],
-//   {
-//     appName: "OSSDonate",
-//     projectId: "044601f65212332475a09bc14ceb3c34",
-//   }
-// );
-
-// export const config = createConfig({
-//   connectors: connectors,
-//   chains: [celo, celoAlfajores, localhost],
-//   transports: {
-//     [celo.id]: http(),
-//     [celoAlfajores.id]: http(),
-//     // [hardhat.id]: http("http://127.0.0.1:8545/"),
-//     [localhost.id]: http(),
-//   },
-// });
+// TODO remember to add the mainnet address here
+export const CONTRACT_ADDRESS =
+  process.env.NEXT_PUBLIC_ENVIRONMENT === "TESTNET"
+    ? "0x9Ea6f574f06dF5C90d89447f1D7C623194AddaE3"
+    : "0x9Ea6f574f06dF5C90d89447f1D7C623194AddaE3";
 
 export const RPC =
   process.env.NEXT_PUBLIC_ENVIRONMENT === "TESTNET"
@@ -74,4 +63,49 @@ export const tempJson = {
       ownedBy: "0x0000000000000000000000000000000000000000",
     },
   },
+};
+
+export async function checkCUSDBalance(
+  client: typeof publicClient,
+  address: `0x${string}`
+) {
+  let StableTokenContract = getContract({
+    abi: stableTokenABI,
+    address: STABLE_TOKEN_ADDRESS,
+    client: client,
+  });
+
+  let balanceInBigNumber = await StableTokenContract.read.balanceOf([address]);
+
+  let balanceInWei = balanceInBigNumber.toString();
+
+  // @ts-expect-error
+  let balanceInEthers = formatEther(balanceInWei, "wei");
+
+  return balanceInEthers;
+}
+
+type Transaction = {
+  account: "0x${string}";
+  to: "0x${string}";
+  value: bigint;
+  data: "0x${string}";
+  stable_token_address: "0x${string}";
+};
+
+export async function estimateGas(
+  client: typeof publicClient,
+  transaction: Transaction
+) {
+  return await client.estimateGas({
+    to: transaction.to,
+    data: transaction.data,
+    value: transaction.value,
+    account: transaction.account,
+    feeCurrency: transaction.stable_token_address || undefined,
+  });
+}
+
+export const gasPrice = async () => {
+  return await publicClient.getGasPrice();
 };

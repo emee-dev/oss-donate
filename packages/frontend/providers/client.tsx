@@ -8,6 +8,7 @@ import { injectedWallet } from "@rainbow-me/rainbowkit/wallets";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider, createConfig, http } from "wagmi";
 import { celo, celoAlfajores } from "wagmi/chains";
+import { Toaster } from "@/components/ui/toaster";
 
 const connectors = connectorsForWallets(
   [
@@ -48,6 +49,7 @@ const ClientProviders = ({ children }: { children: React.ReactNode }) => {
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider>{children}</RainbowKitProvider>
       </QueryClientProvider>
+      <Toaster />
     </WagmiProvider>
   );
 };

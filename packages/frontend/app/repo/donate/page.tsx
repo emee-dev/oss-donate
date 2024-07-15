@@ -10,20 +10,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useWeb3Context } from "@/context";
 import useDebouncedInput from "@/hooks/useDebouncedInput";
-import useLocalStorage from "@/hooks/useLocalStorage";
 import { convertCusdtoNaira } from "@/lib/crypto";
+import { urlDecode } from "@/lib/github";
+import {
+  CONTRACT_ADDRESS,
+  STABLE_TOKEN_ADDRESS,
+  checkCUSDBalance,
+  estimateGas,
+  gasPrice,
+  publicClient,
+} from "@/providers/constants";
 import { useMutation } from "@tanstack/react-query";
 import { m as motion } from "framer-motion";
 import { ArrowUpDown, Loader } from "lucide-react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { ChangeEvent, SyntheticEvent, useEffect, useState } from "react";
+import { parseEther } from "viem";
 import { useWriteContract } from "wagmi";
 import { GithubResponse } from "../../api/route";
-import { CONTRACT_ADDRESS } from "../claim/page";
-import { useWeb3Context } from "@/context";
-
-const STABLE_TOKEN_ADDRESS = "0x765DE816845861e75A25fCA122bb6898B8B1282a";
+import { useToast } from "@/components/ui/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 
 const Celo = dynamic(() => import("@/components/icons/celo"));
 const CopyIcon = dynamic(() => import("@/components/icons/copy"));
@@ -52,12 +61,20 @@ type GithubApi = {
 type Coins = "ngn" | "cusd";
 type CusdProp = { cusdAmt: number };
 
-function DonationModal() {
-  const { account } = useWeb3Context();
-  let [inputvalue, setInputvalue] = useState<number>(5);
+type ComponentProps = {
+  params: {};
+  searchParams: { repo: string | null };
+};
+
+function DonationModal(props: ComponentProps) {
+  const { account, setAccountRepo } = useWeb3Context();
+  // let [inputvalue, setInputvalue] = useState<number>(5);
+  let [inputvalue, setInputvalue] = useState<number>(1);
   let [currentCoin, setCurrentCoin] = useState<Coins>("cusd");
   let { debouncedValue, setValue } = useDebouncedInput({ seconds: 500 });
-  const { writeContract, writeContractAsync } = useWriteContract();
+  const { data: hash, writeContractAsync } = useWriteContract();
+  const router = useRouter();
+  const { toast } = useToast();
 
   const {
     data: basePrice,
@@ -97,15 +114,35 @@ function DonationModal() {
   const convertCusdToNgn = (cusdAmt: number) => mutate({ cusdAmt });
 
   useEffect(() => {
-    checkBasePrice({ cusdAmt: 1 });
-    convertCusdToNgn(inputvalue);
-  }, []);
+    let repo = props.searchParams.repo;
+    if (repo) {
+      let data = urlDecode(repo);
+      setAccountRepo(data);
+    } else {
+      router.push("/");
+    }
+  }, [props.searchParams.repo]);
 
   useEffect(() => {
-    if (debouncedValue) {
-      convertCusdToNgn(debouncedValue);
+    if (hash) {
+      toast({
+        title: "Donation",
+        description: "Thank you for your kind donation.",
+        action: <ToastAction altText="Reciept">Try again</ToastAction>,
+      });
     }
-  }, [debouncedValue]);
+  }, [hash]);
+
+  // useEffect(() => {
+  //   checkBasePrice({ cusdAmt: 1 });
+  //   convertCusdToNgn(inputvalue);
+  // }, []);
+
+  // useEffect(() => {
+  //   if (debouncedValue) {
+  //     convertCusdToNgn(debouncedValue);
+  //   }
+  // }, [debouncedValue]);
 
   const onInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     let value = e.target.valueAsNumber;
@@ -125,13 +162,35 @@ function DonationModal() {
 
     let value = form.get("currentCoin") as string;
 
-    console.log(value);
+    // let bal = await checkCUSDBalance(publicClient, account?.ownAddress!);
+
+    // let gasEstimate = estimateGas(publicClient, {
+    //   data: "0x" as any,
+    //   account: account?.ownAddress! as any,
+    //   to: CONTRACT_ADDRESS as any,
+    //   stable_token_address: STABLE_TOKEN_ADDRESS as any,
+    //   value: parseEther(value),
+    // });
+
+    // console.log(gasEstimate);
+
+    let gas = await gasPrice();
+    // const totalCost = gasEstimate * gas + parseEther(value);
+
+    console.log("gas", gas);
+
+    toast({
+      title: "Donation",
+      description: "Thank you for your kind donation.",
+      action: <ToastAction altText="Reciept">Try again</ToastAction>,
+    });
 
     await writeContractAsync({
       address: CONTRACT_ADDRESS,
       abi: abi.abi,
       functionName: "contributeToProject",
-      args: [account?.repo, account?.address],
+      args: [account?.repo, account?.ownAddress],
+      value: parseEther(value),
     });
   };
 

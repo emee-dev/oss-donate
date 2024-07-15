@@ -26,10 +26,12 @@ import { useReadContract, useWriteContract } from "wagmi";
 // import { config } from "@/providers/client";
 import Link from "next/link";
 import { hardhat, localhost } from "viem/chains";
-import { publicClient, walletClient, config } from "@/providers/constants";
-
-const STABLE_TOKEN_ADDRESS = "0x765DE816845861e75A25fCA122bb6898B8B1282a";
-export const CONTRACT_ADDRESS = "0x9Ea6f574f06dF5C90d89447f1D7C623194AddaE3";
+import {
+  publicClient,
+  walletClient,
+  config,
+  CONTRACT_ADDRESS,
+} from "@/providers/constants";
 
 type Json = {
   ossdonate: {
@@ -200,7 +202,7 @@ const ClaimModal = () => {
                             address: CONTRACT_ADDRESS,
                             abi: abi.abi,
                             functionName: "liquidateProject",
-                            args: [account?.repo, account?.address],
+                            args: [account?.repo, account?.ownAddress],
                           });
                         }}
                       >

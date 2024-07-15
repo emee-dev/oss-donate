@@ -15,7 +15,8 @@ const Swirl = dynamic(() => import("@/components/icons/swirl"));
 
 // import useTheme from "@/hooks/use-theme";
 import useTheme from "@/hooks/useTheme";
-import { cn, urlEncode } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { urlEncode } from "@/lib/github";
 import { useMutation } from "@tanstack/react-query";
 import { GithubResponse } from "@/app/api/route";
 import axios from "axios";

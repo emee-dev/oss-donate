@@ -1,5 +1,5 @@
 export type Web3Account = {
-  address: `0x${string}`;
+  ownAddress: `0x${string}`;
   balance: number;
   repo: string;
 };
@@ -17,25 +17,25 @@ export const createAccountSlice = (set: any): AccountState => ({
   setAccountInfo: (account: Web3Account) => {
     set({ account });
   },
-  setAccountAddress: (address: `0x${string}`) => {
+  setAccountAddress: (ownAddress: `0x${string}`) => {
     set((state: any) => ({
       account: state.account
-        ? { ...state.account, address }
-        : { address, balance: 0, repo: "" },
+        ? { ...state.account, ownAddress }
+        : { ownAddress, balance: 0, repo: "" },
     }));
   },
   setAccountBalance: (balance: number) => {
     set((state: any) => ({
       account: state.account
         ? { ...state.account, balance }
-        : { address: "0x", balance, repo: "" },
+        : { ownAddress: "0x", balance, repo: "" },
     }));
   },
   setAccountRepo: (repo: string) => {
     set((state: any) => ({
       account: state.account
         ? { ...state.account, repo }
-        : { address: "0x", balance: 0, repo },
+        : { ownAddress: "0x", balance: 0, repo },
     }));
   },
 });
