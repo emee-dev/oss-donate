@@ -99,7 +99,7 @@ function MerchUpload() {
       </CardContent>
       <CardFooter>
         <Button className="w-full">
-          <Link href="/repo/user">Dashboard</Link>
+          <Link href="/repo/maintainer">Dashboard</Link>
         </Button>
       </CardFooter>
     </Card>

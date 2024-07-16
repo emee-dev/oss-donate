@@ -58,23 +58,36 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import Link from "next/link";
-import { useWriteContract } from "wagmi";
+import { useReadContract, useWriteContract } from "wagmi";
+// import abi from "@/artifacts/contracts/OSSFunding.sol/OSSFunding.json";
+import { useEffect, useState } from "react";
+import abi from "@/abi/sample";
+import { CONTRACT_ADDRESS } from "@/providers/constants";
+
+type DashboardType = "Contributor" | "Maintainer";
 
 type ComponentProps = {
   params: {};
   searchParams: { repo: string | null };
 };
+
 function Dashboard(props: ComponentProps) {
   let { account, setAccountRepo } = useWeb3Context();
+  // const [dashboardType, setDashboardType] =
+  //   useState<DashboardType>("Contributor");
 
   // const { data: ReadData } = useReadContract({
-  //   abi: abi.abi,
-  //   address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-  //   functionName: "getUser",
-  //   chainId: hardhat.id,
+  //   abi: abi,
+  //   address: CONTRACT_ADDRESS,
+  //   functionName: "isProjectMaintainer",
+  //   args: [account?.repo!, account?.ownAddress!],
   // });
 
-  const { data, isPending, writeContractAsync } = useWriteContract({});
+  // useEffect(() => {
+  //   console.log("isProjectMaintainer", ReadData);
+  // }, [ReadData]);
+
+  // const { data, isPending, writeContractAsync } = useWriteContract({});
 
   // const unwatch = publicClient.watchContractEvent({
   //   address: "0x5fbdb2315678afecb367f032d93f642f64180aa3",
@@ -156,7 +169,7 @@ function Dashboard(props: ComponentProps) {
                 <TabsTrigger value="merch">Merch</TabsTrigger>
               </TabsList>
               <div className="ml-auto flex items-center gap-2">
-                <Link href="/repo/user/new-merch">
+                <Link href="/repo/maintainer/new-merch">
                   <Button size="sm" variant="outline" className="h-7 gap-1">
                     <File className="h-3.5 w-3.5" />
                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">

@@ -1,9 +1,8 @@
-import { connectorsForWallets } from "@rainbow-me/rainbowkit";
-import { injectedWallet } from "@rainbow-me/rainbowkit/wallets";
-import { createConfig as ccreateConfig } from "@wagmi/core";
 // import { createConfig, http } from "wagmi";
+import { Web3Account } from "@/context/useAccount";
+import { stableTokenABI } from "@celo/abis";
 import { createConfig, http } from "@wagmi/core";
-import { celo, celoAlfajores, localhost } from "@wagmi/core/chains";
+import { celo, celoAlfajores } from "@wagmi/core/chains";
 import {
   createPublicClient,
   createWalletClient,
@@ -13,10 +12,6 @@ import {
   parseEther,
 } from "viem";
 import { celoAlfajores as vCeloAlfajores } from "viem/chains";
-import { hardhat } from "wagmi/chains";
-import { privateKeyToAccount } from "viem/accounts";
-import { stableTokenABI } from "@celo/abis";
-import { Web3Account } from "@/context/useAccount";
 
 export const MGCADDRESS = process.env
   .NEXT_PUBLIC_GIFT_CARD_ADDRESS as `0x${string}`;
@@ -43,11 +38,11 @@ export const config = createConfig({
   },
 });
 
-// TODO remember to add the mainnet address here
 export const CONTRACT_ADDRESS =
   process.env.NEXT_PUBLIC_ENVIRONMENT === "TESTNET"
-    ? "0x9Ea6f574f06dF5C90d89447f1D7C623194AddaE3"
-    : "0x9Ea6f574f06dF5C90d89447f1D7C623194AddaE3";
+    ? "0x9bBa93f70E865DbC583851319347a6af9da5C25B"
+    : // TODO remember to add the mainnet address here
+      "0x9bBa93f70E865DbC583851319347a6af9da5C25B";
 
 export const RPC =
   process.env.NEXT_PUBLIC_ENVIRONMENT === "TESTNET"

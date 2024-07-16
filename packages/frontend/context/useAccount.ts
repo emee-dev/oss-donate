@@ -1,7 +1,8 @@
 export type Web3Account = {
-  ownAddress: `0x${string}`;
-  balance: number;
   repo: string;
+  balance: number;
+  isMaintainer: boolean;
+  ownAddress: `0x${string}`;
 };
 
 export type AccountState = {
@@ -10,6 +11,7 @@ export type AccountState = {
   setAccountAddress: (address: `0x${string}`) => void;
   setAccountBalance: (balance: number) => void;
   setAccountRepo: (repo: string) => void;
+  setIsMaintainer: (value: boolean) => void;
 };
 
 export const createAccountSlice = (set: any): AccountState => ({
@@ -36,6 +38,13 @@ export const createAccountSlice = (set: any): AccountState => ({
       account: state.account
         ? { ...state.account, repo }
         : { ownAddress: "0x", balance: 0, repo },
+    }));
+  },
+  setIsMaintainer: (value: boolean) => {
+    set((state: any) => ({
+      account: state.account
+        ? { ...state.account, value }
+        : { ownAddress: "0x", balance: 0, value },
     }));
   },
 });

@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { useAccount, useConnect } from "wagmi";
+import { useAccount, useConnect, useReadContract } from "wagmi";
 import { injected } from "wagmi/connectors";
 
 import {
@@ -34,6 +34,31 @@ import useMediaQuery from "@/hooks/use-media-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
+import abi from "@/abi/sample";
+import { CONTRACT_ADDRESS } from "@/providers/constants";
+
+const links = [
+  {
+    href: "/repo/maintainer",
+    icon: LayoutDashboard,
+    text: "Dashboard",
+  },
+  {
+    href: "/repo/claim",
+    icon: Pickaxe,
+    text: "Claim",
+  },
+  {
+    href: "/repo/verify",
+    icon: ShieldCheck,
+    text: "Verify",
+  },
+  {
+    href: "/repo/donate",
+    icon: HandCoins,
+    text: "Donate",
+  },
+];
 
 type ComponentProps = {
   params: {};
@@ -63,7 +88,7 @@ const Repository = ({ children }: ComponentProps) => {
   }, [address]);
 
   useEffect(() => {
-    if (pathname === "/repo/user") {
+    if (pathname === "/repo/maintainer") {
       setHidden(true);
       console.log("pathname", pathname);
     }
@@ -118,59 +143,34 @@ function DrawerDialogDemo() {
             Navigate to the appropriate page
           </DrawerDescription>
         </DrawerHeader>
-        <PageLinks setOpen={setOpen} />
+        <PageLinks setOpen={setOpen} className="text-lg my-2 last:mb-10 ml-2" />
       </DrawerContent>
     </Drawer>
   );
 }
 
-const PageLinks = (props: { setOpen: (st: boolean) => void }) => {
+const PageLinks = (props: {
+  setOpen: (st: boolean) => void;
+  className?: string;
+}) => {
   return (
     <div className="flex flex-col">
-      <Link href="/repo/user">
-        <Button
-          type="button"
-          variant={"link"}
-          className="flex items-center"
-          onClick={() => props.setOpen(false)}
-        >
-          <LayoutDashboard size="1.1rem" className="mr-4" />
-          Dashboard
-        </Button>
-      </Link>
-      <Link href="/repo/claim">
-        <Button
-          type="button"
-          variant={"link"}
-          className="flex items-center"
-          onClick={() => props.setOpen(false)}
-        >
-          <Pickaxe size="1.1rem" className="mr-4" />
-          Claim
-        </Button>
-      </Link>
-      <Link href="/repo/verify">
-        <Button
-          type="button"
-          variant={"link"}
-          className="flex items-center"
-          onClick={() => props.setOpen(false)}
-        >
-          <ShieldCheck size="1.1rem" className="mr-4" />
-          Verify
-        </Button>
-      </Link>
-      <Link href="/repo/donate">
-        <Button
-          type="button"
-          variant={"link"}
-          className="flex items-center"
-          onClick={() => props.setOpen(false)}
-        >
-          <HandCoins size="1.1rem" className="mr-4" />
-          Donate
-        </Button>
-      </Link>
+      {links.map((link, index) => {
+        const IconComponent = link.icon;
+        return (
+          <Link href={link.href} key={index} className={props.className}>
+            <Button
+              type="button"
+              variant="link"
+              className="flex items-center"
+              onClick={() => props.setOpen(false)}
+            >
+              <IconComponent size="1.1rem" className="mr-4" />
+              {link.text}
+            </Button>
+          </Link>
+        );
+      })}
     </div>
   );
 };

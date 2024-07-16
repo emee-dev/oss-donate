@@ -1,28 +1,4 @@
-export default [
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "repo",
-        type: "string",
-      },
-      {
-        internalType: "address",
-        name: "contributor",
-        type: "address",
-      },
-    ],
-    name: "contributeToProject",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-    ],
-    stateMutability: "payable",
-    type: "function",
-  },
+const abi = [
   {
     inputs: [],
     stateMutability: "nonpayable",
@@ -73,64 +49,45 @@ export default [
     type: "event",
   },
   {
-    inputs: [
-      {
-        internalType: "string",
-        name: "repo",
-        type: "string",
-      },
-      {
-        internalType: "address",
-        name: "maintainer",
-        type: "address",
-      },
-    ],
-    name: "liquidateProject",
-    outputs: [
-      {
-        internalType: "string",
-        name: "",
-        type: "string",
-      },
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "repo",
-        type: "string",
-      },
-      {
-        internalType: "address",
-        name: "maintainer",
-        type: "address",
-      },
-    ],
-    name: "registerProject",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
     stateMutability: "payable",
     type: "fallback",
   },
   {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "ethAmountFor1Dollar",
+        type: "uint256",
+      },
+    ],
+    name: "acceptTask",
+    outputs: [],
     stateMutability: "payable",
-    type: "receive",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "repo",
+        type: "string",
+      },
+      {
+        internalType: "address",
+        name: "contributor",
+        type: "address",
+      },
+    ],
+    name: "contributeToProject",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "payable",
+    type: "function",
   },
   {
     inputs: [
@@ -157,10 +114,64 @@ export default [
         name: "total_contributions",
         type: "uint256",
       },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
       {
         internalType: "string",
-        name: "level",
+        name: "title",
         type: "string",
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "maintainer",
+        type: "address",
+      },
+    ],
+    name: "createTask",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getAllTasks",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "string",
+            name: "title",
+            type: "string",
+          },
+          {
+            internalType: "uint256",
+            name: "amount",
+            type: "uint256",
+          },
+          {
+            internalType: "address",
+            name: "maintainer",
+            type: "address",
+          },
+        ],
+        internalType: "struct OSSFunding.Task[]",
+        name: "",
+        type: "tuple[]",
       },
     ],
     stateMutability: "view",
@@ -228,24 +239,82 @@ export default [
     inputs: [
       {
         internalType: "string",
-        name: "",
+        name: "repo",
         type: "string",
+      },
+      {
+        internalType: "address",
+        name: "user_address",
+        type: "address",
       },
     ],
-    name: "tasks",
+    name: "isProjectMaintainer",
     outputs: [
       {
-        internalType: "string",
-        name: "milestone",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "sticker_id",
-        type: "string",
+        internalType: "bool",
+        name: "",
+        type: "bool",
       },
     ],
     stateMutability: "view",
     type: "function",
   },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "repo",
+        type: "string",
+      },
+      {
+        internalType: "address",
+        name: "maintainer",
+        type: "address",
+      },
+    ],
+    name: "liquidateProject",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "repo",
+        type: "string",
+      },
+      {
+        internalType: "address",
+        name: "maintainer",
+        type: "address",
+      },
+    ],
+    name: "registerProject",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    stateMutability: "payable",
+    type: "receive",
+  },
 ] as const;
+
+export default abi;
