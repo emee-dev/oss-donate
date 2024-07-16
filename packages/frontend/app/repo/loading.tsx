@@ -19,21 +19,19 @@ const Loading = () => {
               <div className="flex items-center gap-3 mt-2">
                 <Skeleton className="rounded-full bg-primary/35 w-[40px] h-[40px] flex justify-center items-center" />
                 <div className="tracking-tight">
-                  <span className="text-primary/75">{"repo"} / </span>
-                  <span className="text-neutral-400">
-                    {"git clone link" + ".git"}
-                  </span>
+                  <Skeleton className="text-primary/75 h-[20px] w-[40px]">
+                    {" "}
+                  </Skeleton>
+                  <Skeleton className="text-neutral-400 h-[40px] w-[40px]"></Skeleton>
                 </div>
               </div>
 
               <div className="flex flex-col gap-2 lg:mt-0 mt-4">
-                <span className="leading-5 tracking-tight text-neutral-200">
-                  CLAIMABLE TOKENS
-                </span>
+                <Skeleton className="leading-5 tracking-tight text-neutral-200"></Skeleton>
                 <div className="flex">
-                  <span className="text-neutral-400">NONE</span>
+                  <Skeleton className="text-neutral-400"></Skeleton>
 
-                  <div className="py-3 ml-auto">Claim</div>
+                  <Skeleton className="py-3 ml-auto"></Skeleton>
                 </div>
               </div>
             </div>

@@ -381,7 +381,7 @@ const ClaimModal = () => {
         }
 
         if (!data.funding_file) {
-          return { github: null, file: "missing" };
+          return { github: data, file: "missing" };
         }
 
         // let project = await readContract(config, {
@@ -584,19 +584,6 @@ const ClaimModal = () => {
               </Button>
             )}
 
-            {isError && (
-              <Button
-                className="w-40 ml-auto"
-                type="submit"
-                onClick={() => {
-                  reset();
-                  setErrorMessage(null);
-                }}
-              >
-                <ArrowRight size={18} className="mr-3" /> Retry
-              </Button>
-            )}
-
             {!isError && data && data.file === "missing" && (
               <Link href="repo/verify">
                 <Button className="w-40 ml-auto" type="submit">
@@ -612,6 +599,36 @@ const ClaimModal = () => {
               >
                 <Button className="w-full " type="submit">
                   <ArrowRight size={18} className="mr-3" /> Dashboard
+                </Button>
+              </Link>
+            )}
+          </CardFooter>
+
+          <CardFooter className="flex justify-between">
+            {isError && (
+              <Button
+                className="w-40"
+                type="submit"
+                onClick={() => {
+                  reset();
+                  setErrorMessage(null);
+                }}
+              >
+                <ArrowRight size={18} className="mr-3" /> Retry
+              </Button>
+            )}
+
+            {isError && (
+              <Link href={`/repo/verify?repo=${account?.repo}`}>
+                <Button
+                  className="w-40  "
+                  type="submit"
+                  onClick={() => {
+                    reset();
+                    setErrorMessage(null);
+                  }}
+                >
+                  <ArrowRight size={18} className="mr-3" /> Claim project
                 </Button>
               </Link>
             )}

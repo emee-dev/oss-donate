@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { SyntheticEvent, useEffect, useState } from "react";
 import { GithubResponse } from "../../api/route";
 import { useWeb3Context } from "@/context";
@@ -49,11 +50,25 @@ type GithubApi = {
   success: boolean;
 };
 
-const VerifyModal = () => {
+type ComponentProps = {
+  params: {};
+  searchParams: { repo: string | null };
+};
+
+const VerifyModal = (props: ComponentProps) => {
   let { account, setAccountRepo } = useWeb3Context();
   let [object, setObject] = useState<string>("");
   const { getValue, setValue } = useLocalStorage();
   const { copied, copyToClipboard } = useCopyToClipboard();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (props.searchParams.repo) {
+      setAccountRepo(props.searchParams.repo);
+    } else {
+      router.push("/repo/claim");
+    }
+  }, []);
 
   const { data, isPending, isError, mutate } = useMutation<
     GithubResponse,
@@ -139,7 +154,8 @@ const VerifyModal = () => {
                   id="repo"
                   type="text"
                   readOnly
-                  placeholder="https://github.com/emee-dev/treblle-monorepo.git"
+                  value={account?.repo}
+                  placeholder="https://github.com/<org>/<repo>.git"
                 />
                 <motion.div>
                   <Link href="/repo/claim">
