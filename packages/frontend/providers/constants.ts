@@ -41,8 +41,7 @@ export const config = createConfig({
 export const CONTRACT_ADDRESS =
   process.env.NEXT_PUBLIC_ENVIRONMENT === "TESTNET"
     ? "0x9bBa93f70E865DbC583851319347a6af9da5C25B"
-    : // TODO remember to add the mainnet address here
-      "0x9bBa93f70E865DbC583851319347a6af9da5C25B";
+    : "0xf7f08E8CbF0ed23bf9538674A571d8d86B44eaa6";
 
 export const RPC =
   process.env.NEXT_PUBLIC_ENVIRONMENT === "TESTNET"

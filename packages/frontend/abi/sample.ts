@@ -1,6 +1,12 @@
 const abi = [
   {
-    inputs: [],
+    inputs: [
+      {
+        internalType: "address",
+        name: "freeMintTokenAddress",
+        type: "address",
+      },
+    ],
     stateMutability: "nonpayable",
     type: "constructor",
   },
@@ -145,6 +151,19 @@ const abi = [
       },
     ],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "freeMintToken",
+    outputs: [
+      {
+        internalType: "contract IFreeMintToken",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
