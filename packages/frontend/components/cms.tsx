@@ -1,8 +1,5 @@
 "use client";
 
-// import Celo from "@/components/icons/celo";
-// import Metamask from "@/components/icons/metamask";
-// import Minipay from "@/components/icons/minipay";
 import dynamic from "next/dynamic";
 import {
   Tooltip,

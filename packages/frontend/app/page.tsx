@@ -4,9 +4,13 @@
 // import Hero from "@/components/hero";
 // import Navbar from "@/components/navbar";
 import dynamic from "next/dynamic";
+import Loader from "./loading";
 
 const Navbar = dynamic(() => import("@/components/navbar"));
-const Hero = dynamic(() => import("@/components/hero"));
+const Hero = dynamic(() => import("@/components/hero"), {
+  ssr: false,
+  loading: () => <Loader />,
+});
 const Cms = dynamic(() => import("@/components/cms"));
 const Features = dynamic(() => import("@/components/features"));
 const Footer = dynamic(() => import("@/components/footer"));

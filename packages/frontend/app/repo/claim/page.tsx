@@ -607,7 +607,7 @@ const ClaimModal = () => {
 
             {!isError && data && data.file === "found" && (
               <Link
-                href={`repo/maintainer?repo=${account?.repo}`}
+                href={`/maintainer?repo=${account?.repo}`}
                 className="w-full"
               >
                 <Button className="w-full " type="submit">

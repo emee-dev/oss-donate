@@ -1,14 +1,23 @@
 "use client";
 
+import { Toaster } from "@/components/ui/toaster";
+import { useWeb3Context } from "@/context";
 import {
   RainbowKitProvider,
   connectorsForWallets,
 } from "@rainbow-me/rainbowkit";
 import { injectedWallet } from "@rainbow-me/rainbowkit/wallets";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WagmiProvider, createConfig, http } from "wagmi";
+import { useEffect } from "react";
+import {
+  WagmiProvider,
+  createConfig,
+  http,
+  useAccount,
+  useConnect,
+} from "wagmi";
 import { celo, celoAlfajores } from "wagmi/chains";
-import { Toaster } from "@/components/ui/toaster";
+import { injected } from "wagmi/connectors";
 
 const connectors = connectorsForWallets(
   [
@@ -47,11 +56,32 @@ const ClientProviders = ({ children }: { children: React.ReactNode }) => {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider>{children}</RainbowKitProvider>
+        <RainbowKitProvider>
+          <Web3Account>{children}</Web3Account>
+        </RainbowKitProvider>
       </QueryClientProvider>
       <Toaster />
     </WagmiProvider>
   );
+};
+
+const Web3Account = ({ children }: { children: React.ReactNode }) => {
+  let { address } = useAccount();
+  let { setAccountAddress } = useWeb3Context();
+  const { connect } = useConnect();
+
+  useEffect(() => {
+    if (window.ethereum && window.ethereum.isMiniPay) {
+      connect({ connector: injected({ target: "metaMask" }) });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (address) {
+      setAccountAddress(address);
+    }
+  }, [address]);
+  return <>{children}</>;
 };
 
 export default ClientProviders;

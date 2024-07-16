@@ -67,13 +67,15 @@ type ComponentProps = {
 };
 
 function DonationModal(props: ComponentProps) {
-  const { account, setAccountRepo } = useWeb3Context();
+  const { account } = useWeb3Context();
   let [inputvalue, setInputvalue] = useState<number>(1);
   let [currentCoin, setCurrentCoin] = useState<Coins>("cusd");
   let { debouncedValue, setValue } = useDebouncedInput({ seconds: 500 });
   const {
     data: hash,
     isPending: writeIsPending,
+    isError: writeIsError,
+    error: writeError,
     writeContractAsync,
   } = useWriteContract();
   const router = useRouter();
@@ -99,6 +101,23 @@ function DonationModal(props: ComponentProps) {
     },
   });
 
+  useEffect(() => {
+    console.log(account);
+
+    if (writeError) {
+      toast({
+        title: "Oops Application error",
+        description: writeError.message,
+        variant: "destructive",
+        // action: (
+        //   <Link>
+        //     <ToastAction altText="Reciept">Account topup</ToastAction>
+        //   </Link>
+        // ),
+      });
+    }
+  }, [writeIsError, writeError]);
+
   const { data, mutate } = useMutation<string | null, null, CusdProp>({
     mutationKey: ["price_compare"],
     mutationFn: async (payload) => {
@@ -116,15 +135,15 @@ function DonationModal(props: ComponentProps) {
 
   const convertCusdToNgn = (cusdAmt: number) => mutate({ cusdAmt });
 
-  useEffect(() => {
-    let repo = props.searchParams.repo;
-    if (repo) {
-      let data = urlDecode(repo);
-      setAccountRepo(data);
-    } else {
-      router.push("/");
-    }
-  }, [props.searchParams.repo]);
+  // useEffect(() => {
+  //   let repo = props.searchParams.repo;
+  //   if (repo) {
+  //     let data = urlDecode(repo);
+  //     setAccountRepo(data);
+  //   } else {
+  //     router.push("/");
+  //   }
+  // }, [props.searchParams.repo]);
 
   useEffect(() => {
     if (hash) {
@@ -141,16 +160,16 @@ function DonationModal(props: ComponentProps) {
     }
   }, [hash]);
 
-  // useEffect(() => {
-  //   checkBasePrice({ cusdAmt: 1 });
-  //   convertCusdToNgn(inputvalue);
-  // }, []);
+  useEffect(() => {
+    checkBasePrice({ cusdAmt: 1 });
+    convertCusdToNgn(inputvalue);
+  }, []);
 
-  // useEffect(() => {
-  //   if (debouncedValue) {
-  //     convertCusdToNgn(debouncedValue);
-  //   }
-  // }, [debouncedValue]);
+  useEffect(() => {
+    if (debouncedValue) {
+      convertCusdToNgn(debouncedValue);
+    }
+  }, [debouncedValue]);
 
   const onInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     let value = e.target.valueAsNumber;

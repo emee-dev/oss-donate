@@ -15,7 +15,6 @@ const Layout = ({ children }: any) => {
         // className={`${inter.className} ${caveat.className} ${dmSans.className}`}
       >
         <ClientProviders>{children}</ClientProviders>
-        
       </body>
     </html>
   );

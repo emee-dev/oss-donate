@@ -14,11 +14,11 @@ const Lightning = dynamic(() => import("@/components/icons/lightning"));
 const Swirl = dynamic(() => import("@/components/icons/swirl"));
 
 // import useTheme from "@/hooks/use-theme";
-import useTheme from "@/hooks/useTheme";
-import { cn } from "@/lib/utils";
-import { urlEncode } from "@/lib/github";
-import { useMutation } from "@tanstack/react-query";
 import { GithubResponse } from "@/app/api/route";
+import useTheme from "@/hooks/useTheme";
+import { urlEncode } from "@/lib/github";
+import { cn } from "@/lib/utils";
+import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { LazyMotion, domAnimation, m as motion } from "framer-motion";
 import { Loader2Icon, MoveRightIcon } from "lucide-react";
@@ -36,6 +36,8 @@ const Hero = () => {
   const {
     data: repo,
     isPending,
+    error,
+    isError,
     mutate,
   } = useMutation<GithubResponse, null, { github_repo: string }>({
     mutationKey: ["donate_project"],
@@ -44,13 +46,29 @@ const Hero = () => {
         let req = await axios.post("/api", payload);
         let repo = req.data as GithubResponse;
 
-        if (repo?.funding_file?.ossdonate) {
-          router.push(`/repo/donate?repo=${urlEncode(payload.github_repo)}`);
+        if (!repo) {
+          // setAccountRepo(repo.github_repo.repo);
+          // router.push(`/repo/claim?repo=${urlEncode(payload.github_repo)}`);
+          throw new Error("There was an error with request.");
         }
 
-        console.log("github repo", repo);
+        if (repo && repo.funding_file) {
+          // setAccountAddress(repo.funding_file.ossdonate.celo.ownedBy);
+          // setAccountRepo(repo.github_repo.repo);
 
-        return Promise.resolve(req.data);
+          console.log(
+            "deco",
+            `/repo/donate?repo=${urlEncode(payload.github_repo)}`
+          );
+
+          router.push(`/repo/donate?repo=${urlEncode(payload.github_repo)}`);
+        }
+        // console.log("github repo", repo);
+
+        // setAccountAddress(repo.funding_file.ossdonate.celo.ownedBy);
+        // setAccountRepo(repo.github_repo.repo);
+
+        return Promise.resolve(repo);
       } catch (e: any) {
         let error = e.message as string;
         console.error("Error", error);
@@ -62,14 +80,8 @@ const Hero = () => {
   const onSubmit = (inputdata: Formdata) => {
     console.log(inputdata);
 
-    mutate({ github_repo: inputdata.repo });
+    mutate({ github_repo: inputdata.repo.toLowerCase() });
   };
-
-  // useEffect(() => {
-  //   if (repo && repo.data?.funding_file?.ossdonate) {
-  //     router.push(`/claim?action=claim&repo=${form.getValues("repo")}`);
-  //   }
-  // }, [repo]);
 
   return (
     <main className="mx-auto my-10 select-none flex min-h-[calc(100vh-73px)] max-w-2xl flex-col justify-center gap-6 px-5 text-center lg:my-0">
@@ -156,7 +168,11 @@ const Hero = () => {
                         required: "Please provide a valid github link",
                       })}
                     />
-                    <FormMessage />
+                    {/* {!isPending && form.formState.errors.repo && (
+                      <FormMessage></FormMessage>
+                    )} */}
+
+                    {!isPending && error && <FormMessage>{error}</FormMessage>}
                   </FormItem>
                 )}
               />

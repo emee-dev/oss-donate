@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useWeb3Context } from "@/context";
+import { Suspense } from "react";
 import {
   BookDashed,
   HandCoins,
@@ -36,6 +37,7 @@ import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 import abi from "@/abi/sample";
 import { CONTRACT_ADDRESS } from "@/providers/constants";
+import Loading from "./loading";
 
 const links = [
   {
@@ -65,27 +67,32 @@ type ComponentProps = {
   children: React.ReactNode;
 };
 
-const Repository = ({ children }: ComponentProps) => {
-  let { address } = useAccount();
-  let { setAccountAddress } = useWeb3Context();
-  const { connect } = useConnect();
+const RepositoryLayout = ({ children }: ComponentProps) => {
+  // let { address } = useAccount();
+  let { account, setAccountAddress } = useWeb3Context();
+  const { isPending, connect } = useConnect();
   const [hidden, setHidden] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
-    if (window.ethereum) {
-      connect({ connector: injected({ target: "metaMask" }) });
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (window.ethereum) {
+  //     connect({ connector: injected({ target: "metaMask" }) });
+  //   }
+  // }, []);
 
+  // useEffect(() => {
+  //   if (address) {
+  //     setAccountAddress(address);
+  //   }
+  // }, [address]);
+
+  // Connect
   useEffect(() => {
-    if (address) {
-      setAccountAddress(address);
-    } else {
+    if (account && !account.ownAddress) {
       router.push("/");
     }
-  }, [address]);
+  }, []);
 
   useEffect(() => {
     if (pathname === "/repo/maintainer") {
@@ -99,7 +106,8 @@ const Repository = ({ children }: ComponentProps) => {
       <div className="absolute right-8 top-5">
         {!hidden && <DrawerDialogDemo />}
       </div>
-      {children}
+      {/* <Suspense fallback={<p>Loading UI...</p>}>{children}</Suspense> */}
+      <Suspense fallback={<Loading />}>{children}</Suspense>
     </div>
   );
 };
@@ -175,4 +183,4 @@ const PageLinks = (props: {
   );
 };
 
-export default Repository;
+export default RepositoryLayout;

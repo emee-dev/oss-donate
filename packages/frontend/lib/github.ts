@@ -25,6 +25,8 @@ export async function fetchFundingFile(
     );
     const jsonContent = JSON.parse(content);
 
+    console.log("json", jsonContent);
+
     return jsonContent;
   } catch (error: any) {
     console.error(`Error fetching file: ${error.message}`);
