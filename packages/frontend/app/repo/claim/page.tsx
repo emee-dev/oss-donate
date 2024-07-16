@@ -14,24 +14,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { useWeb3Context } from "@/context";
 import { useMutation } from "@tanstack/react-query";
+import { readContract } from "@wagmi/core";
 import axios from "axios";
 import { LazyMotion, domAnimation, m as motion } from "framer-motion";
 import { ArrowRight, Github, Loader } from "lucide-react";
-import dynamic from "next/dynamic";
 import { SyntheticEvent, useEffect, useState } from "react";
-import { readContract } from "@wagmi/core";
 
+import { useWriteContract } from "wagmi";
 import { GithubResponse } from "../../api/route";
-import { useReadContract, useWriteContract } from "wagmi";
 // import { config } from "@/providers/client";
+import { CONTRACT_ADDRESS, config } from "@/providers/constants";
 import Link from "next/link";
-import { hardhat, localhost } from "viem/chains";
-import {
-  publicClient,
-  walletClient,
-  config,
-  CONTRACT_ADDRESS,
-} from "@/providers/constants";
 
 type Json = {
   ossdonate: {
@@ -57,10 +50,10 @@ const ClaimModal = () => {
     writeContract,
   } = useWriteContract();
 
-  useEffect(() => {
-    console.log("hash", hash);
-    console.log("error", error?.message);
-  }, [hash, error]);
+  // useEffect(() => {
+  //   console.log("hash", hash);
+  //   console.log("error", error?.message);
+  // }, [hash, error]);
 
   const { data, isPending, isError, mutate } = useMutation<
     GithubApi,
@@ -74,8 +67,6 @@ const ClaimModal = () => {
 
         let data = req.data as GithubResponse;
 
-        console.log(data);
-
         if (!data) {
           return Promise.reject(null);
         }
@@ -88,7 +79,7 @@ const ClaimModal = () => {
           abi: abi.abi,
           address: CONTRACT_ADDRESS,
           functionName: "getProjectMaintainer",
-          args: ["https://github.com/emee-dev/treblle-monorepo"],
+          args: [payload.github_repo, account?.ownAddress],
         });
 
         if (!project) {
@@ -197,7 +188,7 @@ const ClaimModal = () => {
                         type="button"
                         disabled={projectBalance === "0"}
                         className="py-3 ml-auto"
-                        onClick={async () => {
+                        onClick={() => {
                           writeContract({
                             address: CONTRACT_ADDRESS,
                             abi: abi.abi,
@@ -277,6 +268,17 @@ const ClaimModal = () => {
               <Link href="repo/verify">
                 <Button className="w-40 ml-auto" type="submit">
                   <ArrowRight size={18} className="mr-3" /> Claim project
+                </Button>
+              </Link>
+            )}
+
+            {!isError && data && data.file === "found" && (
+              <Link
+                href={`repo/maintainer?repo=${account?.repo}`}
+                className="w-full"
+              >
+                <Button className="w-full " type="submit">
+                  <ArrowRight size={18} className="mr-3" /> Dashboard
                 </Button>
               </Link>
             )}

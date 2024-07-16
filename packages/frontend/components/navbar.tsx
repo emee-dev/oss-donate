@@ -33,9 +33,10 @@ const Navbar = () => {
               theme === "violet" && "text-violet-600"
             )}
           /> */}
-          <span className="hidden text-lg font-semibold md:block">
+          {/* <span className="hidden text-lg font-semibold md:block">
             OSS Donate
-          </span>
+          </span> */}
+          <span className="text-lg font-semibold md:block">OSS Donate</span>
         </Link>
         <div className="flex items-center gap-5">
           <a

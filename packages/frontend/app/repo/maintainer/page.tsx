@@ -63,6 +63,7 @@ import { useReadContract, useWriteContract } from "wagmi";
 import { useEffect, useState } from "react";
 import abi from "@/abi/sample";
 import { CONTRACT_ADDRESS } from "@/providers/constants";
+import { useRouter } from "next/navigation";
 
 type DashboardType = "Contributor" | "Maintainer";
 
@@ -71,8 +72,18 @@ type ComponentProps = {
   searchParams: { repo: string | null };
 };
 
+type RepoInfo = {
+  repo_slug: string;
+  maintainer: string;
+  balance: string;
+  hasData: boolean;
+};
+
 function Dashboard(props: ComponentProps) {
-  let { account, setAccountRepo } = useWeb3Context();
+  let { account } = useWeb3Context();
+  const [project, setProject] = useState<RepoInfo | null>(null);
+  const router = useRouter();
+
   // const [dashboardType, setDashboardType] =
   //   useState<DashboardType>("Contributor");
 
@@ -82,6 +93,31 @@ function Dashboard(props: ComponentProps) {
   //   functionName: "isProjectMaintainer",
   //   args: [account?.repo!, account?.ownAddress!],
   // });
+  const { data: projectBalance } = useReadContract({
+    abi: abi,
+    address: CONTRACT_ADDRESS,
+    functionName: "getProjectMaintainer",
+    args: [account?.repo!],
+  });
+
+  useEffect(() => {
+    if (!props.searchParams.repo) {
+      router.push("/");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (projectBalance) {
+      let projectMaintainer = projectBalance.map((i) => i.toString());
+
+      setProject({
+        repo_slug: account?.repo!,
+        maintainer: projectMaintainer[0],
+        balance: projectMaintainer[1],
+        hasData: true,
+      });
+    }
+  }, [projectBalance]);
 
   // useEffect(() => {
   //   console.log("isProjectMaintainer", ReadData);
@@ -211,7 +247,9 @@ function Dashboard(props: ComponentProps) {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      <ProjectTableRow />
+                      {project && project.hasData && (
+                        <ProjectTableRow data={project} />
+                      )}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -264,11 +302,11 @@ function Dashboard(props: ComponentProps) {
   );
 }
 
-const ProjectTableRow = () => {
+const ProjectTableRow = ({ data }: { data: RepoInfo }) => {
   return (
     <TableRow>
-      <TableCell className="font-medium">Laser Lemonade Machine</TableCell>
-      <TableCell>$499.99</TableCell>
+      <TableCell className="font-medium">{data.repo_slug}</TableCell>
+      <TableCell>$ {data.balance}</TableCell>
       <TableCell className="hidden md:table-cell">
         2023-07-12 10:42 AM
       </TableCell>
