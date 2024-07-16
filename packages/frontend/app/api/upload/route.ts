@@ -1,19 +1,8 @@
 import { Buffer } from "buffer";
 // import { supabase } from "@/utils/supabase/client";
 import formidable from "formidable";
-import fs from "fs";
-// import { supabase } from "@/utils/supabase/client";
 import { NextRequest, NextResponse } from "next/server";
-
-import { v2 as cloudinary } from "cloudinary";
-import { createClient } from "@/utils/supabase/server";
 import { supabase } from "@/utils/supabase/client";
-
-cloudinary.config({
-  cloud_name: process.env.NEXT_CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.NEXT_CLOUDINARY_API_KEY,
-  api_secret: process.env.NEXT_CLOUDINARY_API_SECRET,
-});
 
 export const config = {
   api: {
@@ -22,38 +11,6 @@ export const config = {
 };
 
 export const POST = async (req: NextRequest, res: NextResponse) => {
-  // const formData = await req.formData();
-
-  // let body = Object.fromEntries(formData);
-
-  // // cloudinary.uploader.
-
-  // // for (let key in body) {
-  // //   let value = body[key];
-
-  // //   value
-  // // }
-
-  // console.log("body", body);
-
-  // // let login = await supabase.auth.signInAnonymously();
-
-  // // if (login.data.user) {
-  // //   console.log(login.data.user);
-  // // }
-  // const { data, error } = await supabase.storage
-  //   .from("avatars")
-  //   .upload("public/avatar1.png", avatarFile, {
-  //     cacheControl: "3600",
-  //     upsert: false,
-  //   });
-
-  // // const file = (await formData.get("files")) as Blob | null;
-
-  // // console.log("file", file);
-
-  // return Response.json({ message: "File Uploaded" });
-
   try {
     // Extract form data
     const formData = await req.formData();

@@ -73,7 +73,7 @@ const VerifyModal = () => {
 
         if (
           account &&
-          account?.address === res.funding_file.ossdonate.celo.ownedBy
+          account?.ownAddress === res.funding_file.ossdonate.celo.ownedBy
         ) {
           return Promise.resolve(res);
         } else {
@@ -86,10 +86,10 @@ const VerifyModal = () => {
   });
 
   useEffect(() => {
-    if (account?.address) {
+    if (account?.ownAddress) {
       let json = {
         ossdonate: {
-          celo: { ownedBy: account?.address },
+          celo: { ownedBy: account?.ownAddress },
         },
       } as Json;
 

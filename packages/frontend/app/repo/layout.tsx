@@ -41,7 +41,7 @@ type ComponentProps = {
 };
 
 const Repository = ({ children }: ComponentProps) => {
-  let { address, status } = useAccount();
+  let { address } = useAccount();
   let { setAccountAddress } = useWeb3Context();
   const { connect } = useConnect();
   const [hidden, setHidden] = useState(false);
@@ -79,7 +79,7 @@ const Repository = ({ children }: ComponentProps) => {
   );
 };
 
-export function DrawerDialogDemo() {
+function DrawerDialogDemo() {
   const [open, setOpen] = useState(false);
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
