@@ -1,14 +1,5 @@
-import { Buffer } from "buffer";
-// import { supabase } from "@/utils/supabase/client";
-import formidable from "formidable";
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/utils/supabase/client";
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
 
 export const POST = async (req: NextRequest, res: NextResponse) => {
   try {
@@ -22,22 +13,6 @@ export const POST = async (req: NextRequest, res: NextResponse) => {
     if (!avatarFile) {
       return Response.json({ message: "No file provided" });
     }
-
-    // console.log(avatarFile);
-
-    // let bytes = await avatarFile.arrayBuffer();
-    // const buffer = Buffer.from(bytes);
-
-    // // const byteArrayBuffer = fs.readFileSync();
-    // let data = await new Promise((resolve) => {
-    //   cloudinary.uploader
-    //     .upload_stream((error, uploadResult) => {
-    //       return resolve(uploadResult);
-    //     })
-    //     .end(buffer);
-    // });
-
-    // console.log("data", data);
 
     // Upload the file to Supabase storage
     const { data, error } = await supabase.storage
