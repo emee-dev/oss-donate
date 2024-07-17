@@ -585,7 +585,7 @@ const ClaimModal = () => {
             )}
 
             {!isError && data && data.file === "missing" && (
-              <Link href="/repo/verify">
+              <Link href={`/repo/verify?repo=${account?.repo}`}>
                 <Button className="w-40 ml-auto" type="submit">
                   <ArrowRight size={18} className="mr-3" /> Claim project
                 </Button>
