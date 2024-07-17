@@ -102,7 +102,7 @@ function Dashboard(props: ComponentProps) {
 
   useEffect(() => {
     if (!props.searchParams.repo) {
-      router.push("/");
+      router.push("/repo/claim");
     }
   }, []);
 

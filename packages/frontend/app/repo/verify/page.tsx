@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import useCopyToClipboard from "@/hooks/useCopyToClipboard";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { useContext } from "@/hooks/useTheme";
-import { tempJson } from "@/providers/constants";
+import { CONTRACT_ADDRESS, tempJson } from "@/providers/constants";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { LazyMotion, domAnimation, m as motion } from "framer-motion";
@@ -32,6 +32,9 @@ import { SyntheticEvent, useEffect, useState } from "react";
 import { GithubResponse } from "../../api/route";
 import { useWeb3Context } from "@/context";
 import abi from "@/artifacts/contracts/OSSFunding.sol/OSSFunding.json";
+import { useWriteContract } from "wagmi";
+import { parseEther } from "viem";
+import { useToast } from "@/components/ui/use-toast";
 
 const STABLE_TOKEN_ADDRESS = "0x765DE816845861e75A25fCA122bb6898B8B1282a";
 
@@ -58,9 +61,9 @@ type ComponentProps = {
 const VerifyModal = (props: ComponentProps) => {
   let { account, setAccountRepo } = useWeb3Context();
   let [object, setObject] = useState<string>("");
-  const { getValue, setValue } = useLocalStorage();
   const { copied, copyToClipboard } = useCopyToClipboard();
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (props.searchParams.repo) {
@@ -70,6 +73,31 @@ const VerifyModal = (props: ComponentProps) => {
     }
   }, []);
 
+  const {
+    data: hash,
+    isPending: writeIsPending,
+    isError: writeIsError,
+    error: writeError,
+    writeContractAsync,
+  } = useWriteContract();
+
+  useEffect(() => {
+    console.log(account);
+
+    if (writeError) {
+      toast({
+        title: "Oops Application error",
+        description: writeError.message,
+        variant: "destructive",
+        // action: (
+        //   <Link>
+        //     <ToastAction altText="Reciept">Account topup</ToastAction>
+        //   </Link>
+        // ),
+      });
+    }
+  }, [writeIsError, writeError]);
+
   const { data, isPending, isError, mutate } = useMutation<
     GithubResponse,
     null,
@@ -78,11 +106,10 @@ const VerifyModal = (props: ComponentProps) => {
     mutationKey: ["verify_project"],
     mutationFn: async (payload) => {
       try {
+        console.log(payload);
         let isOwner = await axios.post("/api", payload);
 
-        if (!isOwner) {
-          return Promise.reject("Invalid github repo");
-        }
+        console.log(isOwner);
 
         let res = isOwner.data as GithubResponse;
 
@@ -90,10 +117,27 @@ const VerifyModal = (props: ComponentProps) => {
           account &&
           account?.ownAddress === res.funding_file.ossdonate.celo.ownedBy
         ) {
-          return Promise.resolve(res);
-        } else {
-          return Promise.reject(null);
+          router.push(`/repo/maintainer?repo=${payload.github_repo}`);
+          return Promise.resolve(res.github_repo);
         }
+
+        let registerProject = await writeContractAsync({
+          address: CONTRACT_ADDRESS,
+          abi: abi["abi"],
+          functionName: "registerProject",
+          args: [account?.repo, account?.ownAddress!],
+        });
+
+        return Promise.resolve<any>({
+          // funding_file: {
+          //   ossdonate: {
+          //     celo: {
+          //       ownedBy: account?.ownAddress! as string,
+          //     },
+          //   },
+          // },
+          message: "Project registered successfully.",
+        });
       } catch (e: any) {
         return Promise.reject(e.message);
       }
@@ -121,9 +165,16 @@ const VerifyModal = (props: ComponentProps) => {
 
     const form = new FormData(ev.currentTarget);
 
-    let value = form.get("repo") as string;
+    // let value = form.get("repo") as string;
 
-    mutate({ github_repo: value });
+    // console.log(account?.repo);
+
+    if (!account?.repo) {
+      router.push("/repo/claim");
+      return;
+    }
+
+    mutate({ github_repo: account.repo!.toLowerCase() });
   };
 
   return (
@@ -210,7 +261,7 @@ const VerifyModal = (props: ComponentProps) => {
                 </motion.div>
               )}
 
-              {isError && (
+              {isError && !data && (
                 <motion.div
                   className="h-fit w-full rounded-md border pb-3 px-4 flex flex-col gap-3"
                   initial={{ opacity: 0, y: 50 }}
@@ -225,7 +276,7 @@ const VerifyModal = (props: ComponentProps) => {
                     <div className="tracking-tight">
                       <span className="text-primary/75">{"Ops"} / </span>
                       <span className="text-neutral-400">
-                        {"Could verify project ownership"}
+                        {"Could not verify project ownership"}
                       </span>
                     </div>
                   </div>

@@ -71,6 +71,7 @@ const Web3Account = ({ children }: { children: React.ReactNode }) => {
   const { connect } = useConnect();
 
   useEffect(() => {
+    // if (window.ethereum) {
     if (window.ethereum && window.ethereum.isMiniPay) {
       connect({ connector: injected({ target: "metaMask" }) });
     }
