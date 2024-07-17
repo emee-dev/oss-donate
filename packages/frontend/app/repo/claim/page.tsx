@@ -466,7 +466,7 @@ const ClaimModal = () => {
                   name="repo"
                   type="text"
                   autoFocus
-                  placeholder="https://github.com/emee-dev/treblle-monorepo.git"
+                  placeholder="https://github.com/<org>/<repo>.git"
                   required
                 />
                 <motion.div className="w-6">
@@ -585,7 +585,7 @@ const ClaimModal = () => {
             )}
 
             {!isError && data && data.file === "missing" && (
-              <Link href="repo/verify">
+              <Link href="/repo/verify">
                 <Button className="w-40 ml-auto" type="submit">
                   <ArrowRight size={18} className="mr-3" /> Claim project
                 </Button>
@@ -594,7 +594,7 @@ const ClaimModal = () => {
 
             {!isError && data && data.file === "found" && (
               <Link
-                href={`/maintainer?repo=${account?.repo}`}
+                href={`/repo/maintainer?repo=${account?.repo}`}
                 className="w-full"
               >
                 <Button className="w-full " type="submit">
